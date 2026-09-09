@@ -28,3 +28,8 @@ class User(BaseUser):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class LoginRequest(BaseModel):
+    email: str
+    senha: str
