@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import profiles, users
+from app import profiles, users
 
 app = FastAPI(
     title="Academic Side Quest - API",
