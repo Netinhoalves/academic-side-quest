@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoProjeto from '../assets/logo.png';
 import tituloProjeto from '../assets/titulo.svg';
@@ -7,6 +7,19 @@ export default function Inicio() {
     const navigate = useNavigate();
 
     const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
+
+    useEffect(() => {
+        const handleAtalho = (event) => {
+            if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'a') {
+                event.preventDefault();
+                navigate('/painel-adm');
+            }
+        };
+
+        window.addEventListener('keydown', handleAtalho);
+
+        return () => window.removeEventListener('keydown', handleAtalho);
+    }, [navigate]);
 
     return (
         <div className="min-h-screen bg-color-creme flex flex-col items-center justify-center p-4">
@@ -28,6 +41,10 @@ export default function Inicio() {
                     </button>
                 </div>
             )}
+
+            <p className="mt-6 text-color-blue text-sm sm:text-base tracking-wide text-center">
+                Atalho do painel administrativo: Ctrl + Alt + A
+            </p>
         </div>
 
     )
