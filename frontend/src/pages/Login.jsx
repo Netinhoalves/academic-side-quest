@@ -3,27 +3,34 @@ import { useState } from "react";
 import { InputField } from "../components/InputField";
 import pixelSup from '../assets/pixel-superior.png';
 import pixelInf from '../assets/pixel-inferior.png';
+import { login as loginApi } from '../services/api';
 
 export default function Login() {
   const { tipo } = useParams();
   const navigate = useNavigate();
   const [carregando, setCarregando] = useState(false);
-  const tituloFormatado = tipo === 'docente' ? 'Docente' : 'Aluno';
+  const [erro, setErro] = useState('');
+  const tituloFormatado = tipo === 'docente' ? 'Docente' : tipo === 'adm' || tipo === 'admin' || tipo === 'administrador' ? 'Administrador' : 'Aluno';
   const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setCarregando(true);
+    setErro('');
 
     const formData = new FormData(e.target);
     const dados = Object.fromEntries(formData);
-    console.log(`[TESTE HARDCODED] Login do ${tipo}:`, dados);
 
-    setTimeout(() => {
-      alert(`Simulação: ${tipo} logado com sucesso`);
+    try {
+      const resposta = await loginApi({ email: dados.email, senha: dados.senha });
+      localStorage.setItem('asq_token', resposta.token);
+      localStorage.setItem('asq_usuario', JSON.stringify(resposta.usuario));
+      navigate(resposta.usuario?.perfil === 'Administrador' ? '/painel-adm' : '/');
+    } catch (error) {
+      setErro(error.message || 'Falha ao autenticar');
+    } finally {
       setCarregando(false);
-      navigate('/'); 
-    }, 1500);
+    }
   };
 
   return (
@@ -33,6 +40,12 @@ export default function Login() {
 
       <div className="relative z-10 bg-color-yellow rounded-[15px] shadow-lg w-full max-w-[560px] p-6 sm:p-8 flex flex-col items-center">
         <h1 className="text-color-blue text-[40px] font-normal mb-6 self-start md:ml-6">Login do {tituloFormatado}</h1>
+
+        {erro && (
+          <div className="w-full max-w-[442px] mb-3 rounded-[10px] bg-red-100 border border-red-300 px-3 py-2 text-red-700 text-sm">
+            {erro}
+          </div>
+        )}
 
         <form className="w-full flex flex-col items-center gap-2" onSubmit={handleLogin}>
           <InputField label="Seu e-mail:" type="email" id="email" name="email" required />

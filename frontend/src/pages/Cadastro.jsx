@@ -1,30 +1,84 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { InputField } from "../components/InputField";
 import { SelectField } from "../components/SelectField";
 import pixelSupAzul from '../assets/pixel-superior-azul.svg';
 import pixelInfAzul from '../assets/pixel-inferior-azul.png';
+import { createUser, getProfiles } from '../services/api';
 
 export default function Cadastro() {
   const { tipo } = useParams();
   const [etapa, setEtapa] = useState(1); 
   const [carregando, setCarregando] = useState(false);
+  const [perfis, setPerfis] = useState([]);
+  const [erro, setErro] = useState('');
   const navigate = useNavigate();
 
-  const handleCadastro = (e) => {
+  useEffect(() => {
+    let ativo = true;
+
+    getProfiles()
+      .then((dados) => {
+        if (ativo) {
+          setPerfis(dados);
+        }
+      })
+      .catch((error) => {
+        if (ativo) {
+          setErro(error.message || 'Não foi possível carregar os perfis');
+        }
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
+  const perfilDesejado = useMemo(() => {
+    const nomesPermitidos = {
+      aluno: ['Aluno'],
+      docente: ['Docente', 'Professor'],
+      adm: ['Administrador'],
+      admin: ['Administrador'],
+      administrador: ['Administrador'],
+    };
+
+    const nomes = nomesPermitidos[tipo] ?? [tipo ?? ''];
+
+    return perfis.find((perfil) =>
+      nomes.some((nome) => perfil.nome_perfil.toLowerCase() === nome.toLowerCase())
+    );
+  }, [perfis, tipo]);
+
+  const handleCadastro = async (e) => {
     e.preventDefault();
     setCarregando(true); 
+    setErro('');
 
     const formData = new FormData(e.target);
     const dados = Object.fromEntries(formData);
 
-    console.log(`SÓ UM TESTE = Novo cadastro de ${tipo}:`, dados);
-    
-    setTimeout(() => {
-      alert('Simulação: Cadastro realizado');
+    const matricula = dados.codigo_aluno || dados.codigo_servidor || '';
+
+    if (!perfilDesejado) {
+      setErro('Perfil correspondente não encontrado no backend');
       setCarregando(false);
+      return;
+    }
+
+    try {
+      await createUser({
+        ...dados,
+        matricula,
+        id_perfil: perfilDesejado.id,
+      });
+
       navigate(`/login/${tipo}`);
-    }, 1500);
+    } catch (error) {
+      setErro(error.message || 'Falha ao cadastrar');
+    } finally {
+      setCarregando(false);
+    }
   }
 
   const avancarEtapa = () => {
@@ -61,6 +115,12 @@ export default function Cadastro() {
         <h1 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-6 self-start md:ml-6">
           Cadastro
         </h1>
+
+        {erro && (
+          <div className="w-full max-w-[442px] mb-3 rounded-[10px] bg-red-100 border border-red-300 px-3 py-2 text-red-700 text-sm">
+            {erro}
+          </div>
+        )}
 
         <form className="w-full flex flex-col items-center mb-10 gap-2" onSubmit={handleCadastro}>
           {/* FLUXO DO DOCENTE */}

@@ -16,7 +16,7 @@ INSERT IGNORE INTO Usuario (
 ) VALUES (
     'Administrador Teste',
     'admin@teste.com',
-    'admin123',
+    '$2b$12$LTn2lXjw4j3.IZBvaVVzg.SBn50ce9FwVpn9FGp5vS54td0LehPGa',
     NULL,
     4,
     1

@@ -12,7 +12,7 @@ export default function Inicio() {
         const handleAtalho = (event) => {
             if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'a') {
                 event.preventDefault();
-                navigate('/painel-adm');
+                navigate('/login/adm');
             }
         };
 
