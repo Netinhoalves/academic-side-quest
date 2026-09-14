@@ -2,7 +2,7 @@ from typing import Optional
 
 import bcrypt
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.auth import get_current_admin
@@ -125,4 +125,4 @@ def delete_user(
 
     user.ativo = False
     db.commit()
-    return None
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

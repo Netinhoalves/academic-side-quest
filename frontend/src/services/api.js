@@ -18,7 +18,9 @@ async function request(path, { method = 'GET', body, token } = {}) {
 	});
 
 	const contentType = response.headers.get('content-type') || '';
-	const data = contentType.includes('application/json') ? await response.json() : null;
+	const isJson = contentType.includes('application/json');
+	const raw = isJson ? await response.text() : null;
+	const data = raw ? JSON.parse(raw) : null;
 
 	if (!response.ok) {
 		throw new Error(data?.detail || data?.message || 'Falha ao comunicar com a API');
