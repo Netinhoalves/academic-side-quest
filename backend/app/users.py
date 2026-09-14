@@ -3,8 +3,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app import models, schemas
-from app.database import get_db
 from app.auth import get_current_admin
+from app.database import get_db
+from app.models import Usuario
+from app.schemas import CreateUser, UpdateUser, User
+from app.security import hash_password
 
 router = APIRouter(prefix="/usuarios", tags=["Gestão de Usuários (Admin)"])
 
@@ -32,6 +35,28 @@ def get_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
     return user
 
+@router.post("", response_model=User, status_code=201)
+def create_user(data: CreateUser, db: Session = Depends(get_db)):
+    if db.query(Usuario).filter(Usuario.email == data.email).first():
+        raise HTTPException(status_code=409, detail="E-mail já cadastrado")
+
+    if data.matricula and db.query(Usuario).filter(Usuario.matricula == data.matricula).first():
+        raise HTTPException(status_code=409, detail="Matrícula já cadastrada")
+
+    user = Usuario(
+        nome=data.nome,
+        email=data.email,
+        senha_hash=hash_password(data.senha),
+        matricula=data.matricula,
+        id_perfil=data.id_perfil,
+    )
+
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 @router.put("/{id}", response_model=schemas.User)
 def update_user(
     id: int,
@@ -44,7 +69,6 @@ def update_user(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
 
-    # Compatibilidade Pydantic v1 / v2
     updates = data.model_dump(exclude_unset=True) if hasattr(data, "model_dump") else data.dict(exclude_unset=True)
 
     if "email" in updates and updates["email"] != user.email:
@@ -62,6 +86,9 @@ def update_user(
         ).first()
         if duplicado:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Matrícula já cadastrada")
+
+    if "senha" in updates:
+        user.senha_hash = hash_password(updates.pop("senha"))
 
     for campo, valor in updates.items():
         setattr(user, campo, valor)

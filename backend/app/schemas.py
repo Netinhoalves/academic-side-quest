@@ -14,9 +14,13 @@ class BaseUser(BaseModel):
     matricula: Optional[str] = None
     id_perfil: int
 
+class CreateUser(BaseUser):
+    senha: str
+
 class UpdateUser(BaseModel):
     nome: Optional[str] = None
     email: Optional[str] = None
+    senha: Optional[str] = None
     matricula: Optional[str] = None
     id_perfil: Optional[int] = None
     ativo: Optional[bool] = None
