@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app import models, schemas
 from app.database import get_db
 
-SECRET_KEY = os.getenv("SECRET_KEY", "chave_super_secreta_provisoria")
+SECRET_KEY = "5b9a8f4e2d3c1b6a7f8e9d0c2b4a1f3e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a"
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
@@ -25,6 +25,12 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
 
     if not bcrypt.checkpw(req.senha.encode('utf-8'), usuario.senha_hash.encode('utf-8')):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
+
+    if not usuario.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Usuário inativo. Entre em contato com o administrador."
+        )
 
     nome_perfil = usuario.perfil.nome_perfil if usuario.perfil else "Sem Perfil"
 
