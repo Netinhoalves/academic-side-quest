@@ -32,3 +32,22 @@ O MySQL será iniciado em um container Docker e ficará disponível na porta 330
 Para parar o container:
 
 	docker compose down
+
+## Backend - API
+
+### Configuração
+
+Copie o arquivo de exemplo do backend:
+
+	cp backend/.env.example backend/.env
+
+Defina uma `SECRET_KEY` própria no `backend/.env` (a API não inicia sem ela). Para gerar uma chave:
+
+	python -c "import secrets; print(secrets.token_hex(32))"
+
+### Rodar a API
+
+Dentro da pasta `backend`:
+
+	pip install -r requirements.txt
+	uvicorn app.main:app --reload
