@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS Perfil (
     id INT PRIMARY KEY,
     nome_perfil VARCHAR(50) NOT NULL UNIQUE
@@ -13,7 +14,8 @@ CREATE TABLE IF NOT EXISTS Usuario (
     id_perfil INT NOT NULL,
     ativo TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_usuario_perfil
         FOREIGN KEY (id_perfil)
@@ -23,18 +25,36 @@ CREATE TABLE IF NOT EXISTS Usuario (
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE IF NOT EXISTS PPC (
+CREATE TABLE IF NOT EXISTS Curso (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(150) NOT NULL,
-    versao VARCHAR(30) NOT NULL,
-    total_pontos DECIMAL(10,2) NOT NULL,
-    data_inicio DATE NOT NULL,
-    data_fim DATE NOT NULL,
-    id_professor INT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    sigla VARCHAR(30) NOT NULL UNIQUE,
+    instituicao VARCHAR(150) NOT NULL,
+    ativo TINYINT(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB;
 
-    CONSTRAINT fk_ppc_professor
-        FOREIGN KEY (id_professor)
+
+CREATE TABLE IF NOT EXISTS PPC (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_curso INT NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    ano SMALLINT UNSIGNED NOT NULL,
+    descricao TEXT,
+    total_pontos DECIMAL(10,2) NOT NULL,
+    ativo TINYINT(1) NOT NULL DEFAULT 1,
+    id_criador INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_ppc_curso
+        FOREIGN KEY (id_curso)
+        REFERENCES Curso(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_ppc_criador
+        FOREIGN KEY (id_criador)
         REFERENCES Usuario(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
@@ -42,8 +62,8 @@ CREATE TABLE IF NOT EXISTS PPC (
     CONSTRAINT chk_ppc_total_pontos
         CHECK (total_pontos > 0),
 
-    CONSTRAINT chk_ppc_datas
-        CHECK (data_fim >= data_inicio)
+    CONSTRAINT chk_ppc_ano
+        CHECK (ano > 0)
 ) ENGINE=InnoDB;
 
 
@@ -51,6 +71,7 @@ CREATE TABLE IF NOT EXISTS Categoria (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_ppc INT NOT NULL,
     nome VARCHAR(150) NOT NULL,
+    descricao TEXT,
     limite_total DECIMAL(10,2) NOT NULL,
     limite_semestre DECIMAL(10,2) NOT NULL,
 
@@ -77,7 +98,10 @@ CREATE TABLE IF NOT EXISTS Categoria (
 CREATE TABLE IF NOT EXISTS Subcategoria (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_categoria INT NOT NULL,
+    codigo VARCHAR(20) NOT NULL,
     nome VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    documentacao_pedida VARCHAR(255) NOT NULL,
     limite_semestre DECIMAL(10,2) NOT NULL,
 
     CONSTRAINT fk_subcategoria_categoria
@@ -88,6 +112,9 @@ CREATE TABLE IF NOT EXISTS Subcategoria (
 
     CONSTRAINT uq_subcategoria_categoria_nome
         UNIQUE (id_categoria, nome),
+
+    CONSTRAINT uq_subcategoria_categoria_codigo
+        UNIQUE (id_categoria, codigo),
 
     CONSTRAINT chk_subcategoria_limite_semestre
         CHECK (limite_semestre > 0)
@@ -114,34 +141,12 @@ CREATE TABLE IF NOT EXISTS RegraPontuacao (
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE IF NOT EXISTS PeriodoPPC (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    id_ppc INT NOT NULL,
-    numero_semestre TINYINT UNSIGNED NOT NULL,
-    data_inicio DATE NOT NULL,
-    data_fim DATE NOT NULL,
-
-    CONSTRAINT fk_periodo_ppc
-        FOREIGN KEY (id_ppc)
-        REFERENCES PPC(id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT uq_periodo_ppc_semestre
-        UNIQUE (id_ppc, numero_semestre),
-
-    CONSTRAINT chk_periodo_datas
-        CHECK (data_fim >= data_inicio),
-
-    CONSTRAINT chk_periodo_numero_semestre
-        CHECK (numero_semestre > 0)
-) ENGINE=InnoDB;
-
-
 CREATE TABLE IF NOT EXISTS Aluno (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
     id_ppc INT NOT NULL,
+    data_ingresso DATE NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'ATIVO',
 
     CONSTRAINT uq_aluno_usuario
         UNIQUE (id_usuario),
@@ -163,28 +168,26 @@ CREATE TABLE IF NOT EXISTS Aluno (
 CREATE TABLE IF NOT EXISTS Solicitacao (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_aluno INT NOT NULL,
-    id_periodo_ppc INT NOT NULL,
-    data_atividade DATE NOT NULL,
     id_regra_pontuacao INT NOT NULL,
+    descricao_atividade TEXT NOT NULL,
+    data_atividade DATE NOT NULL,
+    ano SMALLINT UNSIGNED NOT NULL,
+    semestre TINYINT UNSIGNED NOT NULL,
     quantidade DECIMAL(10,2),
     arquivo VARCHAR(500) NOT NULL,
     pontos_calculados DECIMAL(10,2) NOT NULL,
     pontos_aproveitados DECIMAL(10,2),
-    status ENUM('PENDENTE', 'APROVADA', 'REJEITADA') NOT NULL DEFAULT 'PENDENTE',
-    id_professor INT,
+    status ENUM('PENDENTE', 'APROVADA', 'REJEITADA')
+        NOT NULL DEFAULT 'PENDENTE',
+    id_avaliador INT,
     observacao TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_solicitacao_aluno
         FOREIGN KEY (id_aluno)
         REFERENCES Aluno(id)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_solicitacao_periodo_ppc
-        FOREIGN KEY (id_periodo_ppc)
-        REFERENCES PeriodoPPC(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
@@ -194,8 +197,8 @@ CREATE TABLE IF NOT EXISTS Solicitacao (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
-    CONSTRAINT fk_solicitacao_professor
-        FOREIGN KEY (id_professor)
+    CONSTRAINT fk_solicitacao_avaliador
+        FOREIGN KEY (id_avaliador)
         REFERENCES Usuario(id)
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
@@ -207,13 +210,22 @@ CREATE TABLE IF NOT EXISTS Solicitacao (
         CHECK (pontos_calculados >= 0),
 
     CONSTRAINT chk_solicitacao_pontos_aproveitados
-        CHECK (pontos_aproveitados IS NULL OR pontos_aproveitados >= 0),
+        CHECK (
+            pontos_aproveitados IS NULL
+            OR pontos_aproveitados >= 0
+        ),
 
     CONSTRAINT chk_solicitacao_aproveitados_limite
         CHECK (
             pontos_aproveitados IS NULL
             OR pontos_aproveitados <= pontos_calculados
-        )
+        ),
+
+    CONSTRAINT chk_solicitacao_semestre
+        CHECK (semestre IN (1, 2)),
+
+    CONSTRAINT chk_solicitacao_ano
+        CHECK (ano > 0)
 ) ENGINE=InnoDB;
 
 
