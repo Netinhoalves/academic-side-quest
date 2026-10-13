@@ -1,6 +1,4 @@
-import os
 import datetime
-import bcrypt
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,9 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
-
-SECRET_KEY = "5b9a8f4e2d3c1b6a7f8e9d0c2b4a1f3e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a"
-ALGORITHM = "HS256"
+from app.security import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, verify_password
 
 security = HTTPBearer()
 
@@ -23,7 +19,7 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
 
-    if not bcrypt.checkpw(req.senha.encode('utf-8'), usuario.senha_hash.encode('utf-8')):
+    if not verify_password(req.senha, usuario.senha_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
 
     if not usuario.ativo:
@@ -38,7 +34,7 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
         "sub": usuario.email,
         "id": usuario.id,
         "perfil": nome_perfil,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 

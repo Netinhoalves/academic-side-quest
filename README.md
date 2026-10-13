@@ -1,53 +1,143 @@
-# academic-side-quest
-Sistema web para gerenciamento, submissão e validação de horas complementares acadêmicas. Projeto da disciplina de Extensão do IFMS.
+# Academic Side Quest
 
-## Banco de dados - MySQL com Docker
+Sistema web para alunos enviarem horas complementares e professores validarem. Projeto da disciplina Atividades de Extensão IV, do curso de Tecnologia em Análise e Desenvolvimento de Sistemas (TADS) do IFMS – Campus Três Lagoas.
 
-O projeto utiliza MySQL 8.0 via Docker para o ambiente de desenvolvimento.
+## Como rodar
 
-### Requisitos
+Passo a passo para quem acabou de clonar o repositório.
 
-- Docker
-- Docker Compose
+### Pré-requisitos
 
-### Configuração inicial
+| Ferramenta | Versão | Para quê |
+|---|---|---|
+| Docker Desktop | versão atual | Banco de dados MySQL |
+| Python | 3.12 ou superior | Backend (API) |
+| Node.js | 22 LTS ou superior | Frontend |
 
-Copie o arquivo de exemplo:
-	cp .env.example .env
+### 1. Subir o banco de dados
 
-Confira as configurações do arquivo .env antes de iniciar o ambiente.
+Na raiz do projeto, crie o arquivo `.env` a partir do exemplo e suba o MySQL.
 
-IMPORTANTE: O arquivo .env pode conter credenciais e não deve ser versionado no Git.
+Git Bash:
 
-### Subir o banco de dados
+```bash
+cp .env.example .env
+docker compose up -d
+docker compose ps
+```
 
-Na raiz do projeto, execute:
+CMD (Windows):
 
-	docker compose up -d
+```bat
+copy .env.example .env
+docker compose up -d
+docker compose ps
+```
 
-Confira se o serviço está em execução:
+Confira as configurações do `.env` antes de subir. Esse arquivo pode conter credenciais e não deve ser versionado no Git.
 
-    docker compose ps
+O MySQL fica disponível na porta **3307** da máquina local. Na primeira vez, o Docker cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed.sql`.
 
-O serviço MySQL utiliza a porta 3307 da máquina local, conforme a configuração do Docker Compose.
+### 2. Rodar o backend
+
+Entre na pasta `backend` e crie o ambiente virtual.
+
+Git Bash:
+
+```bash
+cd backend
+python -m venv venv
+source venv/Scripts/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+CMD (Windows):
+
+```bat
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+Gere uma `SECRET_KEY` (a API não inicia sem ela):
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Copie o valor gerado para a linha `SECRET_KEY=` do arquivo `backend/.env`. As demais variáveis do exemplo já estão alinhadas com o `compose.yml`.
+
+Com o ambiente virtual ativo, ainda dentro de `backend/`, inicie a API (o comando é o mesmo no Git Bash e no CMD):
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Abra a documentação interativa em <http://localhost:8000/docs>.
+
+### 3. Rodar o frontend
+
+Em outro terminal, na raiz do projeto (o comando é o mesmo no Git Bash e no CMD):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+O Vite mostra no terminal o endereço da aplicação (por padrão, <http://localhost:5173>).
+
+## Usuários de teste
+
+| Perfil | E-mail | Senha |
+|---|---|---|
+| Administrador | admin@teste.com | admin123 |
+
+Os usuários de teste dos outros perfis (Aluno, Professor e Coordenador) virão com o seed do PPC.
+
+## Problemas comuns
+
+| Sintoma | Solução |
+|---|---|
+| `SECRET_KEY não definida. Configure-a no arquivo backend/.env` | Rode o `uvicorn` de dentro da pasta `backend/` e confira se o `backend/.env` existe e tem a `SECRET_KEY` preenchida. |
+| `ModuleNotFoundError: No module named 'app'` | O `uvicorn` foi executado fora da pasta `backend/`. Entre em `backend/` e rode o comando de novo. |
+| Tabelas novas não aparecem no banco | O schema e o seed só rodam na criação do volume. Rode `docker compose down -v` e depois `docker compose up -d`. |
+| Container MySQL fica em `Restarting` | Falta o `.env` na raiz do projeto. Crie-o com `cp .env.example .env` (ou `copy .env.example .env` no CMD) e rode `docker compose up -d` de novo. |
+
+## Banco de dados
+
+O projeto utiliza MySQL 8.0 via Docker Compose no ambiente de desenvolvimento.
 
 ### Parar o banco de dados
 
 Para parar e remover os containers do projeto:
 
-	docker compose down
+```bash
+docker compose down
+```
 
-Esse comando não remove os volumes persistentes do banco de dados.
+Esse comando não remove o volume do banco, então os dados continuam na próxima vez que o banco subir.
 
-Não utilize docker compose down -V sem necessidade, porque -v pode remover os volumes e apagar os dados persistidos do MySQL.
+Para recriar o banco do zero, incluindo schema e seed, remova também o volume:
 
-### Schema do Banco de Dados
+```bash
+docker compose down -v
+docker compose up -d
+```
 
-O arquivo backend/database/schema.sql define a estrutura atual do banco e insere os perfis padrão.
+Em desenvolvimento, esse é o jeito de receber as mudanças do schema, porque os dados locais são de teste. O `-v` apaga todos os dados do volume; por isso, não use esse comando em um banco que contenha dados reais.
+
+### Schema do banco de dados
+
+O arquivo `backend/database/schema.sql` define a estrutura atual do banco e insere os perfis padrão.
 
 ### Estrutura atual
 
 O schema contém as seguintes tabelas:
+
 * Perfil
 * Usuario
 * Curso
@@ -58,58 +148,73 @@ O schema contém as seguintes tabelas:
 * Aluno
 * Solicitacao
 
-A tabela PeriodoPPC não faz parte da estrutual atual.
+A tabela PeriodoPPC não faz parte da estrutura atual.
 
 ### Criar e testar um banco separado
 
-Para validar o schema sem afetar os dados do projeto, utilize o banco academic_schema_test.
+Para validar o schema sem afetar os dados do projeto, utilize o banco `academic_schema_test`.
 
-* Atenção: o prodecimento abaixo apaga e recria somente academic_schema_test. Antes de executá-lo, confirme que não existem dados importantes nele.
+Atenção: o procedimento abaixo apaga e recria somente o `academic_schema_test`. Antes de executá-lo, confirme que não existem dados importantes nele.
 
 Crie o banco de testes:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS academic_schema_test;" CREATE DATABASE academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"'
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS academic_schema_test; CREATE DATABASE academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"'
+```
 
 Aplique o schema:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/schema.sql
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/schema.sql
+```
 
 Se o comando não der erros, confira as tabelas:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW TABLES;"'
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW TABLES;"'
+```
 
 Confira a estrutura do PPC:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW CREATE TABLE PPC\G"'
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW CREATE TABLE PPC\G"'
+```
 
 Confira as chaves estrangeiras:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT COUNT(*) AS total_chaves_estrangeiras FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;"'
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT COUNT(*) AS total_chaves_estrangeiras FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;"'
+```
 
-Configura os perfis padrão:
+Confira os perfis padrão:
 
-# docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT id, nome_perfil FROM Perfil ORDER BY id;"'
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT id, nome_perfil FROM Perfil ORDER BY id;"'
+```
 
 O resultado esperado para o schema atual é de 9 tabelas, 11 chaves estrangeiras e 4 perfis padrão.
 
 ### Atualização do schema
 
-O comando CREATE TABLE IF NOT EXISTS cria tabelas ausentes, *mas não modifica automaticamente as tabelas que já existem*.
+O comando `CREATE TABLE IF NOT EXISTS` cria tabelas ausentes, *mas não modifica automaticamente as tabelas que já existem*. Além disso, o Docker só executa o `schema.sql` e o `seed.sql` quando o volume do banco é criado.
 
-Se tiver alterações estruturais no backend/database/schema.sql, o procedimento recomendado é testar primeiro em um banco separado e vazio. Para atualizar um banco existente que já contém dados, avalie as alterações necessárias para uma migração SQL apropriada. Não apague nem recrie o banco principal para aplicar alterações de estrutura.
+Se houver alterações estruturais em `backend/database/schema.sql`, o procedimento recomendado é:
 
-* O banco academic_schema_test é destinado a testes de criação e validação.
-* O banco academic deve ser preservado quando contiver dados do projeto.
+1. Testar primeiro em um banco separado e vazio (`academic_schema_test`).
+2. No ambiente de desenvolvimento, recriar o banco com `docker compose down -v` e `docker compose up -d`, porque os dados locais são de teste.
+3. Em um banco que contenha dados reais (por exemplo, o banco hospedado), não recriar: avaliar uma migração SQL apropriada.
+
+O banco `academic_schema_test` é destinado a testes de criação e validação.
 
 ### Regras gerais da modelagem
 
-Cada PPC informa seu próprio total_pontos.
+Cada PPC informa seu próprio `total_pontos`.
 
 As categorias e subcategorias possuem limites de pontuação próprios.
 
 A pontuação calculada e a pontuação efetivamente aproveitada são armazenadas separadamente em Solicitacao.
 
-O backend é responsável por calcular ano e semestre com base em data_atividade.
+O backend é responsável por calcular ano e semestre com base em `data_atividade`.
 
 As solicitações possuem os estados PENDENTE, APROVADA e REJEITADA.
 
@@ -120,15 +225,83 @@ O schema define restrições de integridade, chaves estrangeiras e perfis padrã
 Antes de iniciar uma alteração no banco:
 
 1. Atualize sua branch com as alterações compartilhadas pela equipe.
-
 2. Confira o estado do Git antes de modificar arquivos.
-
 3. Faça alterações no schema em uma branch de trabalho.
-
 4. Teste o schema em um banco separado.
-
-5. Revise o git diff e execute git diff --check.
-
+5. Revise o `git diff` e execute `git diff --check`.
 6. Atualize esta documentação quando os procedimentos ou a estrutura mudarem.
-
 7. Envie as alterações para revisão por meio de um Pull Request, seguindo o fluxo de trabalho do grupo.
+
+## Sobre o projeto
+
+O aluno envia os certificados das atividades complementares, o professor ou o coordenador valida o envio, e o sistema calcula os pontos conforme as regras do PPC do curso (1 ponto = 1 hora). O curso TADS exige 275 pontos, distribuídos em quatro categorias, cada uma com limite no curso e por semestre.
+
+### Perfis
+
+| Perfil | O que faz |
+|---|---|
+| Aluno | Cadastra-se sozinho, envia horas complementares com o certificado e acompanha seu progresso. |
+| Professor | Cadastrado pelo coordenador. Valida as horas enviadas pelos alunos. |
+| Coordenador | Cadastrado pelo administrador. Cadastra curso, PPC e professores, e também valida horas. |
+| Administrador | Cadastra coordenadores. Não é criado pela API. |
+
+## Tecnologias
+
+| Camada | Tecnologias |
+|---|---|
+| Backend | Python, FastAPI, SQLAlchemy 2, PyMySQL, PyJWT, bcrypt, python-dotenv, Uvicorn |
+| Banco de dados | MySQL 8.0, Docker Compose |
+| Frontend | React 19, Vite, Tailwind CSS 3 |
+
+## Estrutura do repositório
+
+```text
+academic-side-quest/
+├── backend/
+│   ├── app/                 # API FastAPI (rotas, modelos, schemas, autenticação)
+│   ├── database/
+│   │   ├── schema.sql       # estrutura do banco e perfis padrão
+│   │   └── seed.sql         # dados iniciais de teste
+│   ├── .env.example         # variáveis do backend
+│   └── requirements.txt
+├── frontend/                # React + Vite + Tailwind
+│   ├── public/
+│   └── src/
+├── .env.example             # variáveis do MySQL (usadas pelo compose.yml)
+├── compose.yml              # MySQL 8.0 via Docker
+├── LICENSE
+└── README.md
+```
+
+## Equipe
+
+| Nome | Área |
+|---|---|
+| Dirceu Neto | Backend |
+| Gabriel Oliveira | Backend |
+| João Lucas Miranda | Banco de dados |
+| Maysson Alexandre de Oliveira | Frontend |
+| Victor Cazuo | Frontend |
+
+Professora: Maraísa Guerra, disciplina Atividades de Extensão IV.
+
+## Fluxo de trabalho
+
+| Branch | Uso |
+|---|---|
+| `main` | Só recebe merge na véspera de cada entrega. |
+| `dev-backend` | Integração do backend. |
+| `dev-frontend` | Integração do frontend. |
+| `feature/TASK-xx-descricao` | Uma branch por tarefa, criada a partir da `dev-backend` ou da `dev-frontend`. |
+
+1. Crie a branch da tarefa a partir da `dev-backend` ou da `dev-frontend`, no padrão `feature/TASK-xx-descricao`.
+2. Faça commits pequenos, focados na tarefa, no padrão `TASK-xx tipo: descrição`. Tipos: `feat`, `fix`, `chore`, `docs`, `refactor` e `test`.
+3. Abra um Pull Request para a branch de integração e peça revisão. Cada PR precisa de 1 aprovação antes do merge.
+
+## Licença
+
+Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE).
+
+---
+
+IFMS – Campus Três Lagoas · 2026

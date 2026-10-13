@@ -36,7 +36,12 @@ def get_user(
     return user
 
 @router.post("", response_model=User, status_code=201)
-def create_user(data: CreateUser, db: Session = Depends(get_db)):
+def create_user(
+    data: CreateUser,
+    db: Session = Depends(get_db),
+    admin: models.Usuario = Depends(get_current_admin)
+):
+    """Cadastra um novo usuário (Requer token de Administrador)."""
     if db.query(Usuario).filter(Usuario.email == data.email).first():
         raise HTTPException(status_code=409, detail="E-mail já cadastrado")
 
