@@ -44,10 +44,11 @@ export function getUsers(token) {
 	return request('/usuarios', { token });
 }
 
-export function createUser(payload) {
+export function createUser(payload, token) {
 	return request('/usuarios', {
 		method: 'POST',
 		body: payload,
+		token,
 	});
 }
 
@@ -59,9 +60,3 @@ export function updateUser(userId, payload, token) {
 	});
 }
 
-export function deleteUser(userId, token) {
-	return request(`/usuarios/${userId}`, {
-		method: 'DELETE',
-		token,
-	});
-}

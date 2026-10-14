@@ -10,7 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Inicio />} />
         <Route path="/login/:tipo" element={<Login />} />
-        <Route path="/cadastro/:tipo" element={<Cadastro />} />
+        <Route path="/cadastro/aluno" element={<Cadastro />} />
         <Route path="/painel-adm" element={<PainelADM />} />
       </Routes>
     </BrowserRouter>
