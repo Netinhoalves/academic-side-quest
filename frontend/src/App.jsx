@@ -1,12 +1,24 @@
-export default function App() {
-  return (
-    <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
-      <h1 className="text-4xl font-bold text-blue-400 mb-2">
-        Academic Side Quest
-      </h1>
-      <p className="text-slate-300">
-        Ambiente Front-end configurado com React + Vite + Tailwind CSS!
-      </p>
-    </div>
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Inicio from './pages/Inicio';
+import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
+import PainelADM from './pages/PainelADM';
+import DashboardAluno from './pages/DashboardAluno';
+import DashboardCoordenador from './pages/DashboardCoordenador';
+
+function App() {
+  return(
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Inicio />} />
+        <Route path="/login/:tipo" element={<Login />} />
+        <Route path="/cadastro/:tipo" element={<Cadastro />} />
+        <Route path="/painel-adm" element={<PainelADM />} />
+        <Route path="/aluno" element={<DashboardAluno />} />
+        <Route path="/coordenador" element={<DashboardCoordenador />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
+
+export default App;
