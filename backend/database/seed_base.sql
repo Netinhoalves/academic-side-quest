@@ -1,3 +1,4 @@
+SET NAMES utf8mb4;
 -- Task 07 e Task 35: dados básicos de teste e PPC TADS 2019
 -- Senhas: admin@teste.com -> admin123; demais contas -> 123456.
 -- IDs explícitos deixam as referências previsíveis e evitam duplicação por PK ao reexecutar.
