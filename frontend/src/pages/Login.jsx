@@ -25,7 +25,17 @@ export default function Login() {
       const resposta = await loginApi({ email: dados.email, senha: dados.senha });
       localStorage.setItem('asq_token', resposta.token);
       localStorage.setItem('asq_usuario', JSON.stringify(resposta.usuario));
-      navigate(resposta.usuario?.perfil === 'Administrador' ? '/painel-adm' : '/');
+
+      const perfilDB = resposta.usuario?.perfil ? resposta.usuario.perfil.toLowerCase() : '';
+
+      if (perfilDB === 'administrador' || perfilDB === 'admin') {
+        navigate('/painel-adm');
+      } else if (perfilDB === 'coordenador' || perfilDB === 'docente' || perfilDB === 'professor') {
+        navigate('/coordenador');
+      } else {
+        navigate('/aluno');
+      }
+      
     } catch (error) {
       setErro(error.message || 'Falha ao autenticar');
     } finally {
