@@ -89,3 +89,38 @@ def get_current_admin(
             detail="Acesso negado: recurso restrito a usuários com perfil Administrador"
         )
     return usuario_atual
+
+def get_current_coordenador(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Coordenador' ou 'Administrador'."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil not in ("Coordenador", "Administrador"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Coordenador ou Administrador"
+        )
+    return usuario_atual
+
+
+def get_current_validador(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Professor' ou 'Coordenador' (validação de horas)."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil not in ("Professor", "Coordenador"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Professor ou Coordenador"
+        )
+    return usuario_atual
+
+
+def get_current_aluno(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Aluno'."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil != "Aluno":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Aluno"
+        )
+    return usuario_atual
