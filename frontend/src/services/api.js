@@ -1,22 +1,4 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
-export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE !== 'false';
-
-const DEMO_USERS = {
-	aluno: {
-		token: 'demo-token-aluno',
-		usuario: { id: 1, nome: 'Ana Souza', email: 'ana.demo@academic-side-quest.local', perfil: 'aluno' },
-	},
-	coordenador: {
-		token: 'demo-token-coordenador',
-		usuario: { id: 2, nome: 'Carlos Oliveira', email: 'carlos.demo@academic-side-quest.local', perfil: 'coordenador' },
-	},
-};
-
-export function startDemoSession(tipo) {
-	const sessao = DEMO_USERS[tipo] || DEMO_USERS.aluno;
-	localStorage.setItem('asq_token', sessao.token);
-	localStorage.setItem('asq_usuario', JSON.stringify(sessao.usuario));
-}
 
 async function request(path, { method = 'GET', body, token } = {}) {
 	const headers = {};
@@ -48,11 +30,6 @@ async function request(path, { method = 'GET', body, token } = {}) {
 }
 
 export function login(payload) {
-	if (DEMO_MODE) {
-		const tipo = payload?.tipo === 'docente' ? 'coordenador' : 'aluno';
-		return Promise.resolve(DEMO_USERS[tipo]);
-	}
-
 	return request('/login', {
 		method: 'POST',
 		body: payload,

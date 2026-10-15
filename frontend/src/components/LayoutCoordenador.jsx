@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import logoAsq from '../assets/logo-sigla.png';
 import pixelInf from '../assets/pixel-inferior-cinza.svg';
 import MenuCoordenador from './MenuCoordenador';
-import { DEMO_MODE, startDemoSession } from '../services/api';
 
 export default function LayoutCoordenador({ children }) {
     const navigate = useNavigate();
@@ -16,12 +15,6 @@ export default function LayoutCoordenador({ children }) {
 
     useEffect(() => {
         const dados = localStorage.getItem('asq_usuario');
-
-        if (!dados && DEMO_MODE) {
-            startDemoSession('coordenador');
-            setUsuario({ nome: 'Carlos Oliveira', perfil: 'coordenador' });
-            return;
-        }
 
         if (!dados) {
             navigate('/');

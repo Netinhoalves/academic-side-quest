@@ -22,7 +22,7 @@ export default function Login() {
     const dados = Object.fromEntries(formData);
 
     try {
-      const resposta = await loginApi({ email: dados.email, senha: dados.senha, tipo });
+      const resposta = await loginApi({ email: dados.email, senha: dados.senha });
       localStorage.setItem('asq_token', resposta.token);
       localStorage.setItem('asq_usuario', JSON.stringify(resposta.usuario));
 

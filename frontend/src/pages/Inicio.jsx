@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoProjeto from '../assets/logo.png';
 import tituloProjeto from '../assets/titulo.svg';
-import { startDemoSession } from '../services/api';
 
 export default function Inicio() {
     const [mostrarPerfis, setMostrarPerfis] = useState(false);
@@ -34,17 +33,11 @@ export default function Inicio() {
                 </button>
             ) : (
                 <div className="flex flex-col sm:flex-row gap-6">
-                    <button onClick={() => {
-                        startDemoSession('aluno');
-                        navigate('/aluno');
-                    }} className={`${estiloBotao} text-xl w-[200px] py-3`}>
+                    <button onClick={() => navigate('/login/aluno')} className={`${estiloBotao} text-xl w-[200px] py-3`}>
                     Aluno
                     </button>
 
-                    <button onClick={() => {
-                        startDemoSession('coordenador');
-                        navigate('/coordenador');
-                    }} className={`${estiloBotao} text-xl w-[200px] py-3`}>
+                    <button onClick={() => navigate('/login/docente')} className={`${estiloBotao} text-xl w-[200px] py-3`}>
                     Docente
                     </button>
                 </div>
