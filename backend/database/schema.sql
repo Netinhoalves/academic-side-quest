@@ -227,10 +227,3 @@ CREATE TABLE IF NOT EXISTS Solicitacao (
     CONSTRAINT chk_solicitacao_ano
         CHECK (ano > 0)
 ) ENGINE=InnoDB;
-
-
-INSERT IGNORE INTO Perfil (id, nome_perfil) VALUES
-(1, 'Aluno'),
-(2, 'Professor'),
-(3, 'Coordenador'),
-(4, 'Administrador');
