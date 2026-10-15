@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from './Header';
 import pixelInf from '../assets/pixel-inferior-cinza.svg';
+import { DEMO_MODE, startDemoSession } from '../services/api';
 
 export default function LayoutPadrao({ children, perfilPermitido }) {
     const [nomeUsuario, setNomeUsuario] = useState('Visitante');
@@ -11,6 +12,11 @@ export default function LayoutPadrao({ children, perfilPermitido }) {
     useEffect(() => {
         const token = localStorage.getItem('asq_token');
         const dadosSalvos = localStorage.getItem('asq_usuario');
+
+        if ((!token || !dadosSalvos) && DEMO_MODE) {
+            startDemoSession(perfilPermitido?.toLowerCase() === 'professor' ? 'coordenador' : 'aluno');
+            return;
+        }
 
         if (!token || !dadosSalvos) {
             navigate('/');
