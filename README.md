@@ -36,7 +36,7 @@ docker compose ps
 
 Confira as configurações do `.env` antes de subir. Esse arquivo pode conter credenciais e não deve ser versionado no Git.
 
-O MySQL fica disponível na porta **3307** da máquina local. Na primeira vez, o Docker cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed.sql`.
+O MySQL fica disponível na porta **3307** da máquina local. Na primeira vez, o Docker cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed_base.sql`.
 
 ### 2. Rodar o backend
 
@@ -95,8 +95,9 @@ O Vite mostra no terminal o endereço da aplicação (por padrão, <http://local
 | Perfil | E-mail | Senha |
 |---|---|---|
 | Administrador | admin@teste.com | admin123 |
-
-Os usuários de teste dos outros perfis (Aluno, Professor e Coordenador) virão com o seed do PPC.
+| Coordenador | coordenador@teste.com | 123456 |
+| Professor | professor@teste.com | 123456 |
+| Aluno | aluno@teste.com | 123456 |
 
 ## Problemas comuns
 
@@ -104,7 +105,7 @@ Os usuários de teste dos outros perfis (Aluno, Professor e Coordenador) virão 
 |---|---|
 | `SECRET_KEY não definida. Configure-a no arquivo backend/.env` | Rode o `uvicorn` de dentro da pasta `backend/` e confira se o `backend/.env` existe e tem a `SECRET_KEY` preenchida. |
 | `ModuleNotFoundError: No module named 'app'` | O `uvicorn` foi executado fora da pasta `backend/`. Entre em `backend/` e rode o comando de novo. |
-| Tabelas novas não aparecem no banco | O schema e o seed só rodam na criação do volume. Rode `docker compose down -v` e depois `docker compose up -d`. |
+| Tabelas novas não aparecem no banco | Os scripts de inicialização só são executados quando o volume do banco é criado pela primeira vez. Alterações no schema exigem um procedimento de atualização ou recriação planejada do banco. |
 | Container MySQL fica em `Restarting` | Falta o `.env` na raiz do projeto. Crie-o com `cp .env.example .env` (ou `copy .env.example .env` no CMD) e rode `docker compose up -d` de novo. |
 
 ## Banco de dados
@@ -128,11 +129,11 @@ docker compose down -v
 docker compose up -d
 ```
 
-Em desenvolvimento, esse é o jeito de receber as mudanças do schema, porque os dados locais são de teste. O `-v` apaga todos os dados do volume; por isso, não use esse comando em um banco que contenha dados reais.
+**Atenção:** `docker compose down -v` apaga todos os dados armazenados no volume do banco. Use somente se puder perder esses dados.
 
 ### Schema do banco de dados
 
-O arquivo `backend/database/schema.sql` define a estrutura atual do banco e insere os perfis padrão.
+O arquivo `backend/database/schema.sql` define a estrutura atual do banco.
 
 ### Estrutura atual
 
@@ -148,24 +149,27 @@ O schema contém as seguintes tabelas:
 * Aluno
 * Solicitacao
 
-A tabela PeriodoPPC não faz parte da estrutura atual.
 
 ### Criar e testar um banco separado
 
-Para validar o schema sem afetar os dados do projeto, utilize o banco `academic_schema_test`.
+Para validar o schema sem afetar os dados do projeto, utilize um banco de testes separado. Nos exemplos abaixo, o nome utilizado é `academic_schema_test`.
 
-Atenção: o procedimento abaixo apaga e recria somente o `academic_schema_test`. Antes de executá-lo, confirme que não existem dados importantes nele.
-
-Crie o banco de testes:
+Crie um banco exclusivo para testar o schema. O nome `academic_schema_test` abaixo é apenas um exemplo; cada integrante pode escolher outro nome. O comando de criação não apaga um banco que já existe.
 
 ```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "DROP DATABASE IF EXISTS academic_schema_test; CREATE DATABASE academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"'
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"'
 ```
 
 Aplique o schema:
 
 ```bash
 docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/schema.sql
+```
+
+Aplique os dados iniciais:
+
+```bash
+docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/seed_base.sql
 ```
 
 Se o comando não der erros, confira as tabelas:
@@ -196,15 +200,15 @@ O resultado esperado para o schema atual é de 9 tabelas, 11 chaves estrangeiras
 
 ### Atualização do schema
 
-O comando `CREATE TABLE IF NOT EXISTS` cria tabelas ausentes, *mas não modifica automaticamente as tabelas que já existem*. Além disso, o Docker só executa o `schema.sql` e o `seed.sql` quando o volume do banco é criado.
+O comando `CREATE TABLE IF NOT EXISTS` cria tabelas ausentes, *mas não modifica automaticamente as tabelas que já existem*. Além disso, o Docker só executa o `schema.sql` e o `seed_base.sql` quando o volume do banco é criado.
 
 Se houver alterações estruturais em `backend/database/schema.sql`, o procedimento recomendado é:
 
-1. Testar primeiro em um banco separado e vazio (`academic_schema_test`).
-2. No ambiente de desenvolvimento, recriar o banco com `docker compose down -v` e `docker compose up -d`, porque os dados locais são de teste.
+1. Testar primeiro em um banco separado e vazio, usando o nome escolhido para o banco de testes.
+2. No ambiente de desenvolvimento, aplique as alterações do schema por um procedimento de migração do banco. Se for necessário recriar o banco, faça backup dos dados antes, pois a remoção do volume apaga os dados persistidos.
 3. Em um banco que contenha dados reais (por exemplo, o banco hospedado), não recriar: avaliar uma migração SQL apropriada.
 
-O banco `academic_schema_test` é destinado a testes de criação e validação.
+O banco de testes é destinado à validação da criação e da estrutura do schema. Cada integrante pode escolher seu próprio nome para ele.
 
 ### Regras gerais da modelagem
 
@@ -260,8 +264,8 @@ academic-side-quest/
 ├── backend/
 │   ├── app/                 # API FastAPI (rotas, modelos, schemas, autenticação)
 │   ├── database/
-│   │   ├── schema.sql       # estrutura do banco e perfis padrão
-│   │   └── seed.sql         # dados iniciais de teste
+│   │   ├── schema.sql       # estrutura do banco
+│   │   └── seed_base.sql    # dados iniciais de teste
 │   ├── .env.example         # variáveis do backend
 │   └── requirements.txt
 ├── frontend/                # React + Vite + Tailwind
