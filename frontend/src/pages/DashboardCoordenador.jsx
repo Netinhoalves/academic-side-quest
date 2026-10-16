@@ -1,25 +1,17 @@
-import {useState, useEffect} from 'react';
 import {Link} from 'react-router-dom';
 import LayoutPadrao from '../components/LayoutPadrao';
 import DashboardButton from '../components/DashboardButton';
 import {Eye, FileText, ArrowLeft} from 'lucide-react';
+import { lerUsuario } from '../services/sessao';
 
 export default function DashboardCoordenador() {
-    const [nomeUsuario, setNomeUsuario] = useState('Visitante');
-
-    useEffect(() => {
-        const dadosSalvos = localStorage.getItem('asq_usuario');
-
-        if (dadosSalvos) {
-            const usuarioObjeto = JSON.parse(dadosSalvos);
-            setNomeUsuario(usuarioObjeto.nome);
-        }
-    }, [])
+    const usuario = lerUsuario();
+    const perfil = usuario?.perfil?.toLowerCase() || '';
 
     return(
-        <LayoutPadrao perfilPermitido="Professor">
+        <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']}>
             <h1 className="font-jaro text-color-blue text-4xl md:text-[64px] text-center mb-6">
-                Bem vindo {nomeUsuario}!
+                Bem-vindo {usuario?.nome}!
             </h1>
 
             <div className="bg-color-yellow w-full max-w-[900px] min-h-[402px] rounded-[10px] shadow-lg flex flex-wrap items-center justify-center gap-8 md:gap-12 p-8">
@@ -29,18 +21,21 @@ export default function DashboardCoordenador() {
                     icone={<Eye size={64} strokeWidth={2} />} 
                 />
                 
-                <DashboardButton 
-                    linkPara="/gerenciar-projetos" 
-                    texto="Gerenciar Projetos" 
-                    icone={<FileText size={64} strokeWidth={2} />} 
-                />
-                
-                <DashboardButton 
-                    linkPara="/gerenciar-cursos" 
-                    texto="Gerenciar Cursos" 
-                    icone={<FileText size={64} strokeWidth={2} />}
-                    notificacao={2}
-                />
+                {perfil === 'coordenador' && (
+                    <>
+                        <DashboardButton 
+                            linkPara="/gerenciar-projetos" 
+                            texto="Gerenciar Projetos" 
+                            icone={<FileText size={64} strokeWidth={2} />} 
+                        />
+                        
+                        <DashboardButton 
+                            linkPara="/gerenciar-cursos" 
+                            texto="Gerenciar Cursos" 
+                            icone={<FileText size={64} strokeWidth={2} />}
+                        />
+                    </>
+                )}
             </div>
 
             <Link to="/" onClick={() => {

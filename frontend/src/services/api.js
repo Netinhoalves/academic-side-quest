@@ -65,3 +65,7 @@ export function deleteUser(userId, token) {
 		token,
 	});
 }
+
+export const getMe = async (token) => {
+	return await request('/me', { token });
+}

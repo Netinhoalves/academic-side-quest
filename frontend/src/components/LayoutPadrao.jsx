@@ -1,45 +1,30 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import pixelInf from '../assets/pixel-inferior-cinza.svg';
+import { lerUsuario, rotaDoPerfil } from '../services/sessao';
 
-export default function LayoutPadrao({ children, perfilPermitido }) {
-    const [nomeUsuario, setNomeUsuario] = useState('Visitante');
+export default function LayoutPadrao({ children, perfisPermitidos = [] }) {
     const navigate = useNavigate();
-    const location = useLocation();
+    const token = localStorage.getItem('asq_token');
+    const usuario = lerUsuario();
+    const perfil = usuario?.perfil?.toLowerCase() || '';
+    const permitido = Boolean(token && usuario) && perfisPermitidos.some((p) => p.toLowerCase() === perfil);
+    const destino = token && usuario ? rotaDoPerfil(perfil) : '/';
 
     useEffect(() => {
-        const token = localStorage.getItem('asq_token');
-        const dadosSalvos = localStorage.getItem('asq_usuario');
-
-        if (!token || !dadosSalvos) {
-            navigate('/');
-            return;
+        if (!permitido) {
+            navigate(destino, {replace: true});
         }
+    }, [permitido, destino, navigate]);
 
-        const usuarioObjeto = JSON.parse(dadosSalvos);
-
-        const perfilUsuario = usuarioObjeto.perfil ? usuarioObjeto.perfil.toLowerCase() : '';
-        const perfilExigido = perfilPermitido ? perfilPermitido.toLowerCase() : '';
-
-        if (perfilExigido && perfilUsuario !== perfilExigido) {
-            if (perfilUsuario === 'administrador' && location.pathname !== '/painel-adm') {
-                navigate('/painel-adm');
-            } else if ((perfilUsuario === 'coordenador' || perfilUsuario === 'docente' || perfilUsuario === 'professor') && location.pathname !== '/coordenador') {
-                navigate('/coordenador');
-            } else if (perfilUsuario === 'aluno' && location.pathname !== '/aluno') {
-                navigate('/aluno');
-            }
-            return; 
-        }
-
-        setNomeUsuario(usuarioObjeto.nome);
-        
-    }, [navigate, perfilPermitido, location.pathname]);
+    if (!permitido) {
+        return null;
+    }
 
     return(
-        <div className="relative bg-color-cream min-h-screen overflow-hidden flex flex-col">
-            <Header nome={nomeUsuario} /> 
+        <div className="relative bg-color-creme min-h-screen overflow-hidden flex flex-col">
+            <Header nome={usuario.nome} /> 
 
             <main className="relative z-10 flex-1 flex flex-col items-center px-4 mt-12">
                 {children}
