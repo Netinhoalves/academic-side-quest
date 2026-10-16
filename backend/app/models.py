@@ -55,6 +55,9 @@ class Curso(Base):
 
 class PPC(Base):
     __tablename__ = "PPC"
+    __table_args__ = (
+        UniqueConstraint("id_curso", "nome", name="uq_ppc_curso_nome"),
+    )
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_curso = Column(Integer, ForeignKey("Curso.id"), nullable=False)
@@ -69,7 +72,7 @@ class PPC(Base):
 
     curso = relationship("Curso", back_populates="ppcs")
     criador = relationship("Usuario", back_populates="ppcs_criados")
-    categorias = relationship("Categoria", back_populates="ppc")
+    categorias = relationship("Categoria", back_populates="ppc", order_by="Categoria.id")
     alunos = relationship("Aluno", back_populates="ppc")
 
 class Categoria(Base):
@@ -86,7 +89,7 @@ class Categoria(Base):
     limite_semestre = Column(Numeric(10, 2), nullable=False)
 
     ppc = relationship("PPC", back_populates="categorias")
-    subcategorias = relationship("Subcategoria", back_populates="categoria")
+    subcategorias = relationship("Subcategoria", back_populates="categoria", order_by="Subcategoria.id")
 
 class Subcategoria(Base):
     __tablename__ = "Subcategoria"
@@ -98,13 +101,13 @@ class Subcategoria(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     id_categoria = Column(Integer, ForeignKey("Categoria.id"), nullable=False)
     codigo = Column(String(20), nullable=False)
-    nome = Column(String(255), nullable=False)
+    nome = Column(String(500), nullable=False)
     descricao = Column(Text)
     documentacao_pedida = Column(String(255), nullable=False)
     limite_semestre = Column(Numeric(10, 2), nullable=False)
 
     categoria = relationship("Categoria", back_populates="subcategorias")
-    regras = relationship("RegraPontuacao", back_populates="subcategoria")
+    regras = relationship("RegraPontuacao", back_populates="subcategoria", order_by="RegraPontuacao.id")
 
 class RegraPontuacao(Base):
     __tablename__ = "RegraPontuacao"
