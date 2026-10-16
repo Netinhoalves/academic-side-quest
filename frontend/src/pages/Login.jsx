@@ -3,7 +3,8 @@ import { useState } from "react";
 import { InputField } from "../components/InputField";
 import pixelSup from '../assets/pixel-superior.png';
 import pixelInf from '../assets/pixel-inferior.png';
-import { login as loginApi } from '../services/api';
+import { login as loginApi, getMe } from '../services/api';
+import { rotaDoPerfil } from "../services/sessao";
 
 export default function Login() {
   const { tipo } = useParams();
@@ -23,9 +24,12 @@ export default function Login() {
 
     try {
       const resposta = await loginApi({ email: dados.email, senha: dados.senha });
+      const usuario = await getMe(resposta.token);
       localStorage.setItem('asq_token', resposta.token);
-      localStorage.setItem('asq_usuario', JSON.stringify(resposta.usuario));
-      navigate(resposta.usuario?.perfil === 'Administrador' ? '/painel-adm' : '/');
+      localStorage.setItem('asq_usuario', JSON.stringify(usuario));
+
+      navigate(rotaDoPerfil(usuario.perfil));
+      
     } catch (error) {
       setErro(error.message || 'Falha ao autenticar');
     } finally {

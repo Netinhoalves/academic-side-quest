@@ -1,62 +1,72 @@
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
 
 async function request(path, { method = 'GET', body, token } = {}) {
-	const headers = {};
+    const headers = {};
 
-	if (body !== undefined) {
-		headers['Content-Type'] = 'application/json';
-	}
+    if (body !== undefined) {
+        headers['Content-Type'] = 'application/json';
+    }
 
-	if (token) {
-		headers.Authorization = `Bearer ${token}`;
-	}
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
 
-	const response = await fetch(`${API_BASE_URL}${path}`, {
-		method,
-		headers,
-		body: body !== undefined ? JSON.stringify(body) : undefined,
-	});
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
 
-	const contentType = response.headers.get('content-type') || '';
-	const isJson = contentType.includes('application/json');
-	const raw = isJson ? await response.text() : null;
-	const data = raw ? JSON.parse(raw) : null;
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const raw = isJson ? await response.text() : null;
+    const data = raw ? JSON.parse(raw) : null;
 
-	if (!response.ok) {
-		throw new Error(data?.detail || data?.message || 'Falha ao comunicar com a API');
-	}
+    if (!response.ok) {
+        throw new Error(data?.detail || data?.message || 'Falha ao comunicar com a API');
+    }
 
-	return data;
+    return data;
 }
 
 export function login(payload) {
-	return request('/login', {
-		method: 'POST',
-		body: payload,
-	});
+    return request('/login', {
+        method: 'POST',
+        body: payload,
+    });
 }
 
 export function getProfiles() {
-	return request('/profiles');
+    return request('/profiles');
 }
 
 export function getUsers(token) {
-	return request('/usuarios', { token });
+    return request('/usuarios', { token });
 }
 
 export function createUser(payload, token) {
-	return request('/usuarios', {
-		method: 'POST',
-		body: payload,
-		token,
-	});
+    return request('/usuarios', {
+        method: 'POST',
+        body: payload,
+        token,
+    });
 }
 
 export function updateUser(userId, payload, token) {
-	return request(`/usuarios/${userId}`, {
-		method: 'PUT',
-		body: payload,
-		token,
-	});
+    return request(`/usuarios/${userId}`, {
+        method: 'PUT',
+        body: payload,
+        token,
+    });
 }
 
+export function deleteUser(userId, token) {
+    return request(`/usuarios/${userId}`, {
+        method: 'DELETE',
+        token,
+    });
+}
+
+export const getMe = async (token) => {
+    return await request('/me', { token });
+}	
