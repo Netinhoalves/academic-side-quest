@@ -59,6 +59,9 @@ CREATE TABLE IF NOT EXISTS PPC (
         ON DELETE RESTRICT
         ON UPDATE CASCADE,
 
+    CONSTRAINT uq_ppc_curso_nome
+        UNIQUE (id_curso, nome),
+
     CONSTRAINT chk_ppc_total_pontos
         CHECK (total_pontos > 0),
 
@@ -99,7 +102,7 @@ CREATE TABLE IF NOT EXISTS Subcategoria (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_categoria INT NOT NULL,
     codigo VARCHAR(20) NOT NULL,
-    nome VARCHAR(255) NOT NULL,
+    nome VARCHAR(500) NOT NULL,
     descricao TEXT,
     documentacao_pedida VARCHAR(255) NOT NULL,
     limite_semestre DECIMAL(10,2) NOT NULL,
