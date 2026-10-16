@@ -73,6 +73,7 @@ class PPC(BaseModel):
     descricao: Optional[str] = None
     total_pontos: Pontos
     ativo: bool
+    em_uso: bool
     id_criador: int
     created_at: datetime
     updated_at: datetime
@@ -205,6 +206,9 @@ class CadastroPPC(BaseModel):
                 {"soma": f"{float(soma):g}", "total": f"{float(self.total_pontos):g}"},
             )
         return self
+
+class AtivacaoPPC(BaseModel):
+    ativo: bool
 
 class Aluno(BaseModel):
     id: int
