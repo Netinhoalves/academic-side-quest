@@ -8,7 +8,6 @@ greenlet==3.5.5
 h11==0.16.0
 httptools==0.8.0
 idna==3.19
-passlib==1.7.4
 pydantic==2.13.5
 pydantic_core==2.46.5
 PyJWT==2.13.0

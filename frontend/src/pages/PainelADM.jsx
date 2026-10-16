@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
 import { SelectField } from '../components/SelectField';
 import logoSigla from '../assets/logo-sigla.png';
-import { deleteUser, getProfiles, getUsers, updateUser } from '../services/api';
+import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
 
 const camposEdicao = [
 	{ id: 'nome', label: 'Nome completo', type: 'text' },
@@ -39,6 +39,8 @@ export default function PainelADM() {
 	const [perfis, setPerfis] = useState([]);
 	const [linhaAberta, setLinhaAberta] = useState(null);
 	const [modalAberto, setModalAberto] = useState(false);
+	const [cadastroDocenteAberto, setCadastroDocenteAberto] = useState(false);
+	const [cadastroDocente, setCadastroDocente] = useState({ nome: '', matricula: '', email: '', senha: '' });
 	const [formulario, setFormulario] = useState(null);
 	const [carregando, setCarregando] = useState(() => Boolean(token));
 	const [salvando, setSalvando] = useState(false);
@@ -117,6 +119,38 @@ export default function PainelADM() {
 		setFormulario(null);
 	};
 
+	const fecharCadastroDocente = () => {
+		setCadastroDocenteAberto(false);
+		setCadastroDocente({ nome: '', matricula: '', email: '', senha: '' });
+	};
+
+	const cadastrarDocente = async (event) => {
+		event.preventDefault();
+		setSalvando(true);
+		setErro('');
+
+		const perfilDocente = perfis.find((perfil) => ['docente', 'professor'].includes(perfil.nome_perfil.toLowerCase()));
+
+		if (!perfilDocente) {
+			setErro('Perfil de docente não encontrado no backend');
+			setSalvando(false);
+			return;
+		}
+
+		try {
+			const criado = await createUser(
+				{ ...cadastroDocente, id_perfil: perfilDocente.id },
+				token
+			);
+			setDados((atual) => [...atual, criado]);
+			fecharCadastroDocente();
+		} catch (error) {
+			setErro(error.message || 'Falha ao cadastrar docente');
+		} finally {
+			setSalvando(false);
+		}
+	};
+
 	const confirmarEdicao = async () => {
 		if (!formulario) {
 			return;
@@ -149,7 +183,7 @@ export default function PainelADM() {
 		}
 	};
 
-	const excluirRegistro = async () => {
+	const desativarRegistro = async () => {
 		if (!formulario) {
 			return;
 		}
@@ -159,12 +193,11 @@ export default function PainelADM() {
 
 		try {
 			const token = localStorage.getItem('asq_token');
-			await deleteUser(formulario.id, token);
-			setDados((atual) => atual.filter((item) => item.id !== formulario.id));
-			setLinhaAberta((atual) => (atual === formulario.id ? null : atual));
+			const atualizado = await updateUser(formulario.id, { ativo: false }, token);
+			setDados((atual) => atual.map((item) => (item.id === atualizado.id ? atualizado : item)));
 			fecharModal();
 		} catch (error) {
-			setErro(error.message || 'Falha ao excluir usuário');
+			setErro(error.message || 'Falha ao desativar usuário');
 		} finally {
 			setSalvando(false);
 		}
@@ -287,6 +320,16 @@ export default function PainelADM() {
 				</section>
 			</main>
 
+			<div className="max-w-[920px] mx-auto px-4 sm:px-6 pb-8 flex justify-end">
+				<button
+					type="button"
+					onClick={() => setCadastroDocenteAberto(true)}
+					className={`${estiloBotao} px-4 py-2 text-base sm:text-lg`}
+				>
+					Cadastro de Docente
+				</button>
+			</div>
+
 			{modalAberto && formulario && (
 				<div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
 					<div className="relative w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] overflow-hidden">
@@ -351,12 +394,48 @@ export default function PainelADM() {
 									<button type="button" onClick={confirmarEdicao} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
 										{salvando ? 'Salvando...' : 'Confirmar'}
 									</button>
-									<button type="button" onClick={excluirRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] py-2 text-lg" disabled={salvando}>
-										{salvando ? 'Excluindo...' : 'Excluir'}
+									<button type="button" onClick={desativarRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] py-2 text-lg" disabled={salvando}>
+										{salvando ? 'Desativando...' : 'Desativar'}
 									</button>
 								</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			)}
+
+			{cadastroDocenteAberto && (
+				<div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+					<div className="w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] p-5 sm:p-6">
+						<h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Docente</h2>
+						<form onSubmit={cadastrarDocente} className="grid gap-3">
+							{[
+								['nome', 'Nome completo', 'text'],
+								['matricula', 'Código de docente', 'text'],
+								['email', 'E-mail', 'email'],
+								['senha', 'Senha', 'password'],
+							].map(([id, label, type]) => (
+								<label key={id} htmlFor={`docente-${id}`} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+									{label}
+									<input
+										id={`docente-${id}`}
+										type={type}
+										value={cadastroDocente[id]}
+										onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
+										required
+										className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+									/>
+								</label>
+							))}
+							<div className="flex gap-4 mt-4 justify-center">
+								<button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+									Voltar
+								</button>
+								<button type="submit" className={`${estiloBotao} w-[160px] py-2 text-lg`} disabled={salvando}>
+									{salvando ? 'Cadastrando...' : 'Cadastrar'}
+								</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			)}

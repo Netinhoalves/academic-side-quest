@@ -1,6 +1,4 @@
-import os
 import datetime
-import bcrypt
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -8,9 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
-
-SECRET_KEY = os.getenv("SECRET_KEY", "chave_super_secreta_provisoria")
-ALGORITHM = "HS256"
+from app.security import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY, verify_password
 
 security = HTTPBearer()
 
@@ -23,14 +19,14 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
     if not usuario:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
 
-    hash_salvo = usuario.senha_hash or ""
-    try:
-        senha_valida = bcrypt.checkpw(req.senha.encode('utf-8'), hash_salvo.encode('utf-8'))
-    except ValueError:
+    if not verify_password(req.senha, usuario.senha_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
 
-    if not senha_valida:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="E-mail ou senha inválidos")
+    if not usuario.ativo:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Usuário inativo. Entre em contato com o administrador."
+        )
 
     nome_perfil = usuario.perfil.nome_perfil if usuario.perfil else "Sem Perfil"
 
@@ -38,20 +34,11 @@ def login(req: schemas.LoginRequest, db: Session = Depends(get_db)):
         "sub": usuario.email,
         "id": usuario.id,
         "perfil": nome_perfil,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-    return {
-        "sucesso": True,
-        "token": token,
-        "usuario": {
-            "id": usuario.id,
-            "nome": usuario.nome,
-            "email": usuario.email,
-            "perfil": nome_perfil,
-        },
-    }
+    return {"sucesso": True, "token": token}
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -102,3 +89,66 @@ def get_current_admin(
             detail="Acesso negado: recurso restrito a usuários com perfil Administrador"
         )
     return usuario_atual
+
+def get_current_coordenador(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Coordenador' ou 'Administrador'."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil not in ("Coordenador", "Administrador"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Coordenador ou Administrador"
+        )
+    return usuario_atual
+
+
+def get_current_validador(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Professor' ou 'Coordenador' (validação de horas)."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil not in ("Professor", "Coordenador"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Professor ou Coordenador"
+        )
+    return usuario_atual
+
+
+def get_current_aluno(
+    usuario_atual: models.Usuario = Depends(get_current_user)
+) -> models.Usuario:
+    """Garante que o usuário autenticado possua o perfil 'Aluno'."""
+    if not usuario_atual.perfil or usuario_atual.perfil.nome_perfil != "Aluno":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso negado: recurso restrito a usuários com perfil Aluno"
+        )
+    return usuario_atual
+
+
+def get_student_data(usuario: models.Usuario):
+    """Retorna o curso e o PPC do aluno, ou (None, None) se ele não tiver vínculo na tabela Aluno."""
+    if not usuario.aluno:
+        return None, None
+    ppc = usuario.aluno.ppc
+    return ppc.curso, ppc
+
+
+@router.get("/me", response_model=schemas.CurrentUser)
+def get_me(usuario_atual: models.Usuario = Depends(get_current_user)):
+    """Retorna os dados do usuário logado e, se for aluno, o curso e o PPC (Requer token de qualquer perfil)."""
+    nome_perfil = usuario_atual.perfil.nome_perfil if usuario_atual.perfil else None
+
+    curso, ppc = None, None
+    if nome_perfil == "Aluno":
+        curso, ppc = get_student_data(usuario_atual)
+
+    return schemas.CurrentUser(
+        id=usuario_atual.id,
+        nome=usuario_atual.nome,
+        email=usuario_atual.email,
+        matricula=usuario_atual.matricula,
+        perfil=nome_perfil,
+        curso=curso,
+        ppc=ppc,
+    )
