@@ -124,3 +124,31 @@ def get_current_aluno(
             detail="Acesso negado: recurso restrito a usuários com perfil Aluno"
         )
     return usuario_atual
+
+
+def get_student_data(usuario: models.Usuario):
+    """Retorna o curso e o PPC do aluno, ou (None, None) se ele não tiver vínculo na tabela Aluno."""
+    if not usuario.aluno:
+        return None, None
+    ppc = usuario.aluno.ppc
+    return ppc.curso, ppc
+
+
+@router.get("/me", response_model=schemas.CurrentUser)
+def get_me(usuario_atual: models.Usuario = Depends(get_current_user)):
+    """Retorna os dados do usuário logado e, se for aluno, o curso e o PPC (Requer token de qualquer perfil)."""
+    nome_perfil = usuario_atual.perfil.nome_perfil if usuario_atual.perfil else None
+
+    curso, ppc = None, None
+    if nome_perfil == "Aluno":
+        curso, ppc = get_student_data(usuario_atual)
+
+    return schemas.CurrentUser(
+        id=usuario_atual.id,
+        nome=usuario_atual.nome,
+        email=usuario_atual.email,
+        matricula=usuario_atual.matricula,
+        perfil=nome_perfil,
+        curso=curso,
+        ppc=ppc,
+    )
