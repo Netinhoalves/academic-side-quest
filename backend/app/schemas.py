@@ -177,3 +177,12 @@ class Solicitacao(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class CurrentUser(BaseModel):
+    id: int
+    nome: str
+    email: str
+    matricula: Optional[str] = None
+    perfil: Optional[str] = None
+    curso: Optional[Curso] = None
+    ppc: Optional[PPCResumo] = None
