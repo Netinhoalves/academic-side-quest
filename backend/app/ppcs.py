@@ -1,7 +1,9 @@
+import time
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -24,31 +26,23 @@ def list_ppcs_by_curso(id_curso: int, db: Session = Depends(get_db)):
         .all()
     )
 
-@router.post("/ppcs", response_model=schemas.PPCDetalhe, status_code=status.HTTP_201_CREATED)
-def create_ppc(
-    dados: schemas.CadastroPPC,
-    db: Session = Depends(get_db),
-    coordenador: models.Usuario = Depends(get_current_coordenador),
-):
-    """Cadastra um PPC com categorias, subcategorias e regras em uma única transação (Requer token de Coordenador ou Administrador)."""
+def validar_curso_e_nome(db: Session, dados: schemas.CadastroPPC, id_ppc: Optional[int] = None):
+    """Confere se o curso existe e está ativo e se o nome está livre no curso (na edição, ignora o próprio PPC)."""
     curso = db.query(models.Curso).filter(models.Curso.id == dados.id_curso).first()
     if not curso:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Curso não encontrado")
     if not curso.ativo:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Curso inativo")
 
-    if db.query(models.PPC).filter(models.PPC.id_curso == curso.id, models.PPC.nome == dados.nome).first():
+    repetido = db.query(models.PPC).filter(models.PPC.id_curso == curso.id, models.PPC.nome == dados.nome)
+    if id_ppc is not None:
+        repetido = repetido.filter(models.PPC.id != id_ppc)
+    if repetido.first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Já existe um PPC com esse nome neste curso")
 
-    ppc = models.PPC(
-        id_curso=curso.id,
-        nome=dados.nome,
-        ano=dados.ano,
-        descricao=dados.descricao or None,
-        total_pontos=dados.total_pontos,
-        ativo=True,
-        id_criador=coordenador.id,
-    )
+def montar_categorias(dados: schemas.CadastroPPC) -> List[models.Categoria]:
+    """Cria as categorias, subcategorias e regras a partir da árvore recebida no JSON."""
+    categorias = []
     for cat in dados.categorias:
         categoria = models.Categoria(
             nome=cat.nome,
@@ -56,7 +50,7 @@ def create_ppc(
             limite_total=cat.limite_total,
             limite_semestre=cat.limite_semestre,
         )
-        ppc.categorias.append(categoria)
+        categorias.append(categoria)
         for sub in cat.subcategorias:
             subcategoria = models.Subcategoria(
                 codigo=sub.codigo,
@@ -74,9 +68,11 @@ def create_ppc(
                     operacao=regra.operacao,
                     tipo_documento=regra.tipo_documento or sub.documentacao_pedida,
                 ))
+    return categorias
 
+def salvar_ppc(db: Session, ppc: models.PPC) -> models.PPC:
+    """Faz o commit; se o banco recusar, desfaz tudo e responde 409."""
     try:
-        db.add(ppc)
         db.commit()
     except IntegrityError as erro:
         db.rollback()
@@ -86,6 +82,28 @@ def create_ppc(
 
     db.refresh(ppc)
     return ppc
+
+@router.post("/ppcs", response_model=schemas.PPCDetalhe, status_code=status.HTTP_201_CREATED)
+def create_ppc(
+    dados: schemas.CadastroPPC,
+    db: Session = Depends(get_db),
+    coordenador: models.Usuario = Depends(get_current_coordenador),
+):
+    """Cadastra um PPC com categorias, subcategorias e regras em uma única transação (Requer token de Coordenador ou Administrador)."""
+    validar_curso_e_nome(db, dados)
+
+    ppc = models.PPC(
+        id_curso=dados.id_curso,
+        nome=dados.nome,
+        ano=dados.ano,
+        descricao=dados.descricao or None,
+        total_pontos=dados.total_pontos,
+        ativo=True,
+        id_criador=coordenador.id,
+        categorias=montar_categorias(dados),
+    )
+    db.add(ppc)
+    return salvar_ppc(db, ppc)
 
 @router.get("/ppcs", response_model=List[schemas.PPC])
 def list_ppcs(
@@ -112,4 +130,71 @@ def get_ppc(
     ppc = db.query(models.PPC).filter(models.PPC.id == id_ppc).first()
     if not ppc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PPC não encontrado")
+    return ppc
+
+def substituir_ppc(db: Session, id_ppc: int, dados: schemas.CadastroPPC) -> models.PPC:
+    """Troca os dados e a árvore do PPC em uma transação; o PPC fica travado até o commit."""
+    ppc = db.query(models.PPC).filter(models.PPC.id == id_ppc).with_for_update().first()
+    if not ppc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PPC não encontrado")
+    if ppc.em_uso:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="PPC em uso, não pode ser alterado")
+
+    validar_curso_e_nome(db, dados, id_ppc=ppc.id)
+
+    ids_categorias = select(models.Categoria.id).where(models.Categoria.id_ppc == ppc.id)
+    ids_subcategorias = select(models.Subcategoria.id).where(models.Subcategoria.id_categoria.in_(ids_categorias))
+    try:
+        db.query(models.RegraPontuacao).filter(models.RegraPontuacao.id_subcategoria.in_(ids_subcategorias)).delete(synchronize_session=False)
+        db.query(models.Subcategoria).filter(models.Subcategoria.id_categoria.in_(ids_categorias)).delete(synchronize_session=False)
+        db.query(models.Categoria).filter(models.Categoria.id_ppc == ppc.id).delete(synchronize_session=False)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="PPC em uso, não pode ser alterado")
+
+    ppc.id_curso = dados.id_curso
+    ppc.nome = dados.nome
+    ppc.ano = dados.ano
+    ppc.descricao = dados.descricao or None
+    ppc.total_pontos = dados.total_pontos
+    ppc.updated_at = func.now()
+    for categoria in montar_categorias(dados):
+        categoria.id_ppc = ppc.id
+        db.add(categoria)
+
+    return salvar_ppc(db, ppc)
+
+@router.put("/ppcs/{id_ppc}", response_model=schemas.PPCDetalhe)
+def update_ppc(
+    id_ppc: int,
+    dados: schemas.CadastroPPC,
+    db: Session = Depends(get_db),
+    coordenador: models.Usuario = Depends(get_current_coordenador),
+):
+    """Substitui os dados e a árvore de um PPC que ainda não tem alunos vinculados (Requer token de Coordenador ou Administrador)."""
+    for tentativa in range(1, 4):
+        try:
+            return substituir_ppc(db, id_ppc, dados)
+        except OperationalError as erro:
+            # 1213 = deadlock: o MySQL cancelou esta transação por causa de outra edição simultânea; tenta de novo
+            db.rollback()
+            if erro.orig.args[0] != 1213 or tentativa == 3:
+                raise
+            time.sleep(0.1 * tentativa)
+
+@router.patch("/ppcs/{id_ppc}/ativo", response_model=schemas.PPC)
+def update_ppc_ativo(
+    id_ppc: int,
+    dados: schemas.AtivacaoPPC,
+    db: Session = Depends(get_db),
+    coordenador: models.Usuario = Depends(get_current_coordenador),
+):
+    """Ativa ou desativa um PPC, mesmo que ele tenha alunos vinculados (Requer token de Coordenador ou Administrador)."""
+    ppc = db.query(models.PPC).filter(models.PPC.id == id_ppc).first()
+    if not ppc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PPC não encontrado")
+
+    ppc.ativo = dados.ativo
+    db.commit()
+    db.refresh(ppc)
     return ppc

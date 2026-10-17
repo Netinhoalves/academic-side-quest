@@ -11,9 +11,10 @@ from sqlalchemy import (
     String,
     Text,
     UniqueConstraint,
+    exists,
     func,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import column_property, relationship
 from app.database import Base
 
 class Perfil(Base):
@@ -135,6 +136,9 @@ class Aluno(Base):
     usuario = relationship("Usuario", back_populates="aluno")
     ppc = relationship("PPC", back_populates="alunos")
     solicitacoes = relationship("Solicitacao", back_populates="aluno")
+
+# Coluna calculada: True quando existe aluno vinculado ao PPC (a edição do PPC fica bloqueada)
+PPC.em_uso = column_property(exists().where(Aluno.id_ppc == PPC.id))
 
 class Solicitacao(Base):
     __tablename__ = "Solicitacao"
