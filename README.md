@@ -4,83 +4,58 @@ Sistema web para alunos enviarem horas complementares e professores validarem. P
 
 ## Como rodar
 
-Passo a passo para quem acabou de clonar o repositório.
+Passo a passo para quem acabou de clonar o repositório. O caminho recomendado inicia **MySQL e API** com Docker Compose; o frontend é iniciado separadamente.
 
 ### Pré-requisitos
 
-| Ferramenta | Versão | Para quê |
-|---|---|---|
-| Docker Desktop | versão atual | Banco de dados MySQL |
-| Python | 3.12 ou superior | Backend (API) |
-| Node.js | 22 LTS ou superior | Frontend |
+| Ferramenta | Para quê |
+|---|---|
+| Docker Desktop ou Docker Engine com Docker Compose | Banco de dados MySQL e API |
+| Node.js 22 LTS ou superior | Frontend |
+| Python 3.12 ou superior | Necessário somente para executar o backend manualmente |
 
-### 1. Subir o banco de dados
+### 1. Configurar o ambiente e iniciar MySQL + API
 
-Na raiz do projeto, crie o arquivo `.env` a partir do exemplo e suba o MySQL.
+Na raiz do projeto, crie o arquivo `.env` a partir do exemplo.
 
-Git Bash:
-
-```bash
-cp .env.example .env
-docker compose up -d
-docker compose ps
-```
-
-CMD (Windows):
-
-```bat
-copy .env.example .env
-docker compose up -d
-docker compose ps
-```
-
-Confira as configurações do `.env` antes de subir. Esse arquivo pode conter credenciais e não deve ser versionado no Git.
-
-O MySQL fica disponível na porta **3307** da máquina local. Na primeira vez, o Docker cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed_base.sql`.
-
-### 2. Rodar o backend
-
-Entre na pasta `backend` e crie o ambiente virtual.
-
-Git Bash:
+Git Bash, Linux ou macOS:
 
 ```bash
-cd backend
-python -m venv venv
-source venv/Scripts/activate
-pip install -r requirements.txt
 cp .env.example .env
 ```
 
 CMD (Windows):
 
 ```bat
-cd backend
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Gere uma `SECRET_KEY` (a API não inicia sem ela):
+Gere uma chave secreta para a API:
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Copie o valor gerado para a linha `SECRET_KEY=` do arquivo `backend/.env`. As demais variáveis do exemplo já estão alinhadas com o `compose.yml`.
+Se o comando `python` não estiver disponível, tente `python3`. Copie o valor gerado para `SECRET_KEY=` no arquivo `.env` da **raiz do projeto**. Não compartilhe esse valor nem versione o arquivo `.env`.
 
-Com o ambiente virtual ativo, ainda dentro de `backend/`, inicie a API (o comando é o mesmo no Git Bash e no CMD):
+Com o `.env` configurado, na raiz do projeto execute:
 
 ```bash
-uvicorn app.main:app --reload
+docker compose up -d --build
+docker compose ps
 ```
 
-Abra a documentação interativa em <http://localhost:8000/docs>.
+O primeiro comando constrói a imagem da API e inicia a API e o MySQL em segundo plano. O segundo mostra o estado dos serviços. Aguarde o MySQL aparecer como `healthy`.
 
-### 3. Rodar o frontend
+- API: <http://localhost:8000/>
+- Documentação interativa da API: <http://localhost:8000/docs>
+- MySQL: porta `3307` da máquina local.
 
-Em outro terminal, na raiz do projeto (o comando é o mesmo no Git Bash e no CMD):
+Na primeira inicialização de um volume vazio, o MySQL cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed_base.sql`.
+
+### 2. Rodar o frontend
+
+Em outro terminal, na raiz do projeto:
 
 ```bash
 cd frontend
@@ -89,6 +64,52 @@ npm run dev
 ```
 
 O Vite mostra no terminal o endereço da aplicação (por padrão, <http://localhost:5173>).
+
+### 3. Executar o backend manualmente (opcional)
+
+Use esta alternativa somente se quiser executar a API fora do container. Se o serviço `api` do Compose já estiver usando a porta `8000`, pare apenas esse serviço antes de iniciar o backend manualmente:
+
+```bash
+docker compose stop api
+```
+
+Na raiz do projeto, inicie o MySQL pelo Compose:
+
+```bash
+docker compose up -d mysql
+```
+
+Depois, entre na pasta `backend` e crie o ambiente virtual.
+
+Git Bash, Linux ou macOS:
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+Windows CMD:
+
+```bat
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env
+```
+
+Gere uma chave secreta com o comando indicado na etapa 1 e substitua o marcador `SECRET_KEY=` em `backend/.env`. Em execução manual, esse arquivo também precisa conter a `DATABASE_URL` apontando para `localhost:3307`.
+
+Com o ambiente virtual ativo e ainda dentro de `backend/`, inicie a API:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+A documentação interativa fica em <http://localhost:8000/docs>.
 
 ## Usuários de teste
 
@@ -103,24 +124,24 @@ O Vite mostra no terminal o endereço da aplicação (por padrão, <http://local
 
 | Sintoma | Solução |
 |---|---|
-| `SECRET_KEY não definida. Configure-a no arquivo backend/.env` | Rode o `uvicorn` de dentro da pasta `backend/` e confira se o `backend/.env` existe e tem a `SECRET_KEY` preenchida. |
-| `ModuleNotFoundError: No module named 'app'` | O `uvicorn` foi executado fora da pasta `backend/`. Entre em `backend/` e rode o comando de novo. |
+| `SECRET_KEY` ausente ou vazia | No fluxo Docker, confira se `SECRET_KEY` está preenchida no `.env` da raiz. Na execução manual, confira `backend/.env`. Não compartilhe a chave nem versione esses arquivos. |
+| `ModuleNotFoundError: No module named 'app'` | Na execução manual, entre em `backend/`, ative o ambiente virtual e rode o comando `uvicorn` novamente. |
 | Tabelas novas não aparecem no banco | Os scripts de inicialização só são executados quando o volume do banco é criado pela primeira vez. Alterações no schema exigem um procedimento de atualização ou recriação planejada do banco. |
-| Container MySQL fica em `Restarting` | Falta o `.env` na raiz do projeto. Crie-o com `cp .env.example .env` (ou `copy .env.example .env` no CMD) e rode `docker compose up -d` de novo. |
+| API não inicia ou reinicia | Confira os logs com `docker compose logs api`. Verifique se o `.env` da raiz existe e contém `SECRET_KEY` preenchida. |
 
 ## Banco de dados
 
-O projeto utiliza MySQL 8.0 via Docker Compose no ambiente de desenvolvimento.
+O projeto utiliza MySQL 8.0 e a API FastAPI via Docker Compose no ambiente de desenvolvimento.
 
-### Parar o banco de dados
+### Parar os serviços
 
-Para parar e remover os containers do projeto:
+Para parar e remover os containers da API e do MySQL:
 
 ```bash
 docker compose down
 ```
 
-Esse comando não remove o volume do banco, então os dados continuam na próxima vez que o banco subir.
+Esse comando remove os containers da API e do MySQL, mas não remove o volume do banco; os dados continuam disponíveis quando os serviços forem iniciados novamente.
 
 Para recriar o banco do zero, incluindo schema e seed, remova também o volume:
 
@@ -266,13 +287,14 @@ academic-side-quest/
 │   ├── database/
 │   │   ├── schema.sql       # estrutura do banco
 │   │   └── seed_base.sql    # dados iniciais de teste
-│   ├── .env.example         # variáveis do backend
+│   ├── .env.example         # variáveis para execução manual do backend
+│   ├── Dockerfile            # imagem da API
 │   └── requirements.txt
 ├── frontend/                # React + Vite + Tailwind
 │   ├── public/
 │   └── src/
 ├── .env.example             # variáveis do MySQL (usadas pelo compose.yml)
-├── compose.yml              # MySQL 8.0 via Docker
+├── compose.yml              # MySQL 8.0 + API via Docker Compose
 ├── LICENSE
 └── README.md
 ```
