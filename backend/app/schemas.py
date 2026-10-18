@@ -65,6 +65,11 @@ class Curso(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class CadastroCurso(BaseModel):
+    nome: Texto150
+    sigla: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]
+    instituicao: Texto150
+
 class PPC(BaseModel):
     id: int
     id_curso: int
