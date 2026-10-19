@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app import auth, profiles, users
+from app import alunos, ppcs
 
 app = FastAPI(
     title="Academic Side Quest - API",
@@ -14,6 +16,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(profiles.router)
+app.include_router(users.router)
+app.include_router(auth.router)
+app.include_router(alunos.router)
+app.include_router(ppcs.router)
 
 @app.get("/", tags=["Healthcheck"])
 def health_check():

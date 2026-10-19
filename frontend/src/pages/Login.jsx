@@ -3,7 +3,8 @@ import { useState } from "react";
 import { InputField } from "../components/InputField";
 import pixelSup from '../assets/pixel-superior.png';
 import pixelInf from '../assets/pixel-inferior.png';
-import { login as loginApi } from '../services/api';
+import { login as loginApi, getMe } from '../services/api';
+import { rotaDoPerfil } from "../services/sessao";
 
 export default function Login() {
   const { tipo } = useParams();
@@ -23,18 +24,11 @@ export default function Login() {
 
     try {
       const resposta = await loginApi({ email: dados.email, senha: dados.senha });
+      const usuario = await getMe(resposta.token);
       localStorage.setItem('asq_token', resposta.token);
-      localStorage.setItem('asq_usuario', JSON.stringify(resposta.usuario));
+      localStorage.setItem('asq_usuario', JSON.stringify(usuario));
 
-      const perfilDB = resposta.usuario?.perfil ? resposta.usuario.perfil.toLowerCase() : '';
-
-      if (perfilDB === 'administrador' || perfilDB === 'admin') {
-        navigate('/painel-adm');
-      } else if (perfilDB === 'coordenador' || perfilDB === 'docente' || perfilDB === 'professor') {
-        navigate('/coordenador');
-      } else {
-        navigate('/aluno');
-      }
+      navigate(rotaDoPerfil(usuario.perfil));
       
     } catch (error) {
       setErro(error.message || 'Falha ao autenticar');
@@ -76,9 +70,11 @@ export default function Login() {
           </div>
         </form>
 
-        <p className="mt-8 text-color-blue text-lg tracking-wide text-center">
-          Caso não tenha um acesso, <Link to={`/cadastro/${tipo}`} className="text-color-blue-light hover:underline">clique aqui</Link> para criar
-        </p>
+        {tipo === 'aluno' && (
+          <p className="mt-8 text-color-blue text-lg tracking-wide text-center">
+            Caso não tenha um acesso, <Link to="/cadastro/aluno" className="text-color-blue-light hover:underline">clique aqui</Link> para criar
+          </p>
+        )}
       </div>
     </div>
   )

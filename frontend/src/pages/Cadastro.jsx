@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { InputField } from "../components/InputField";
 import { SelectField } from "../components/SelectField";
 import pixelSupAzul from '../assets/pixel-superior-azul.svg';
@@ -7,7 +7,7 @@ import pixelInfAzul from '../assets/pixel-inferior-azul.png';
 import { createUser, getProfiles } from '../services/api';
 
 export default function Cadastro() {
-  const { tipo } = useParams();
+  const { tipo = 'aluno' } = useParams();
   const [etapa, setEtapa] = useState(1); 
   const [carregando, setCarregando] = useState(false);
   const [perfis, setPerfis] = useState([]);

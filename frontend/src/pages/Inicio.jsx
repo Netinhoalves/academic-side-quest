@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logoProjeto from '../assets/logo.png';
 import tituloProjeto from '../assets/titulo.svg';
-
 export default function Inicio() {
     const [mostrarPerfis, setMostrarPerfis] = useState(false);
     const navigate = useNavigate();
