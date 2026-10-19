@@ -1,6 +1,7 @@
 import FormularioEntidade from './FormularioEntidade';
 
 const camposProjeto = [
+    { name: 'id_curso', label: 'ID do curso', type: 'number', placeholder: 'ID do curso no banco' },
     { name: 'titulo', label: 'Título', placeholder: 'Título do PPC' },
     { name: 'ano', label: 'Ano', type: 'number', placeholder: 'Ano do PPC' },
     { name: 'pontos', label: 'Máximo de pontos', type: 'number', placeholder: 'Ex: 100' },

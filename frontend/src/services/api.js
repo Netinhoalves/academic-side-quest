@@ -69,4 +69,24 @@ export function deleteUser(userId, token) {
 
 export const getMe = async (token) => {
     return await request('/me', { token });
-}	
+};
+
+export function getPpcs(token) {
+    return request('/ppcs', { token });
+}
+
+export function getPpc(id, token) {
+    return request(`/ppcs/${id}`, { token });
+}
+
+export function createPpc(payload, token) {
+    return request('/ppcs', { method: 'POST', body: payload, token });
+}
+
+export function updatePpc(id, payload, token) {
+    return request(`/ppcs/${id}`, { method: 'PUT', body: payload, token });
+}
+
+export function deletePpc(id, token) {
+    return request(`/ppcs/${id}`, { method: 'DELETE', token });
+}
