@@ -17,3 +17,8 @@ export function lerUsuario() {
 export function rotaDoPerfil(perfil) {
     return ROTA_DO_PERFIL[(perfil || '').toLowerCase()] || '/';
 }
+
+export function limparSessao() {
+    localStorage.removeItem('asq_token');
+    localStorage.removeItem('asq_usuario');
+}

@@ -11,6 +11,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Inicio />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/login/:tipo" element={<Login />} />
         <Route path="/cadastro/aluno" element={<Cadastro />} />
         <Route path="/painel-adm" element={<PainelADM />} />
