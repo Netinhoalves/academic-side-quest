@@ -24,7 +24,7 @@ export default function LayoutPadrao({ children, perfilPermitido, perfisPermitid
     }
 
     return(
-        <div className="relative bg-color-cream min-h-screen overflow-hidden flex flex-col">
+        <div className="relative bg-color-creme min-h-screen overflow-hidden flex flex-col">
             <Header nome={usuario.nome} /> 
 
             <main className="relative z-10 flex-1 flex flex-col items-center px-4 mt-12">

@@ -8,6 +8,6 @@ const camposProjeto = [
     { name: 'descricao', label: 'Descrição', type: 'textarea', placeholder: 'Descrição do projeto', fullWidth: true },
 ];
 
-export default function ProjetoForm({ titulo, projeto, onSubmit, onCancelar, modoEdicao = false }) {
-    return <FormularioEntidade titulo={titulo} campos={camposProjeto} valoresIniciais={projeto} modoEdicao={modoEdicao} onSubmit={onSubmit} onCancelar={onCancelar} />;
+export default function ProjetoForm({ titulo, projeto, onSubmit, onCancelar, modoEdicao = false, carregando = false }) {
+    return <FormularioEntidade titulo={titulo} campos={camposProjeto} valoresIniciais={projeto} modoEdicao={modoEdicao} onSubmit={onSubmit} onCancelar={onCancelar} carregando={carregando} />;
 }

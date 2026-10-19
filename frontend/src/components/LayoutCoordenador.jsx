@@ -1,28 +1,28 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import logoAsq from '../assets/logo-sigla.png';
 import pixelInf from '../assets/pixel-inferior-cinza.svg';
 import MenuCoordenador from './MenuCoordenador';
+import { lerUsuario, rotaDoPerfil } from '../services/sessao';
 
 export default function LayoutCoordenador({ children }) {
     const navigate = useNavigate();
-    const location = useLocation();
     const [menuRecolhido, setMenuRecolhido] = useState(() => localStorage.getItem('asq_menu_recolhido') !== 'false');
-    const [usuario, setUsuario] = useState(() => {
-        const dados = localStorage.getItem('asq_usuario');
-        return dados ? JSON.parse(dados) : null;
-    });
+    const usuario = lerUsuario();
+    const perfil = usuario?.perfil?.toLowerCase() || '';
+    const permitido = Boolean(localStorage.getItem('asq_token') && usuario)
+        && ['coordenador', 'professor'].includes(perfil);
+    const destino = usuario ? rotaDoPerfil(perfil) : '/';
 
     useEffect(() => {
-        const dados = localStorage.getItem('asq_usuario');
-
-        if (!dados) {
-            navigate('/');
-            return;
+        if (!permitido) {
+            navigate(destino, { replace: true });
         }
+    }, [destino, navigate, permitido]);
 
-        setUsuario(JSON.parse(dados));
-    }, [navigate, location.pathname]);
+    if (!permitido) {
+        return null;
+    }
 
     const nome = usuario?.nome || 'Coordenador';
     const iniciais = nome.split(' ').map((item) => item[0]).join('').slice(0, 2).toUpperCase();

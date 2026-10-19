@@ -1,5 +1,6 @@
 import { BookOpen, Eye, FolderKanban, Home, Menu } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { lerUsuario } from '../services/sessao';
 
 const itensMenu = [
     { texto: 'Visualizar alunos', rota: '/visualizar-alunos', icone: Eye },
@@ -9,8 +10,7 @@ const itensMenu = [
 
 export default function MenuCoordenador({ recolhido, onAlternar }) {
     const location = useLocation();
-    const dadosUsuario = localStorage.getItem('asq_usuario');
-    const usuario = dadosUsuario ? JSON.parse(dadosUsuario) : null;
+    const usuario = lerUsuario();
     const perfil = usuario?.perfil?.toLowerCase();
     const telaInicial = ['coordenador', 'docente', 'professor'].includes(perfil) ? '/coordenador' : '/aluno';
 

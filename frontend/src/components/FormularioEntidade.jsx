@@ -7,6 +7,7 @@ export default function FormularioEntidade({
     modoEdicao = false,
     onSubmit,
     onCancelar,
+    carregando = false,
 }) {
     return (
         <form onSubmit={onSubmit} className="w-full max-w-[1000px] rounded-lg bg-color-yellow px-8 py-6 shadow-sm">
@@ -38,8 +39,8 @@ export default function FormularioEntidade({
                         <X size={18} /> Cancelar
                     </button>
                 )}
-                <button type="submit" className="flex items-center gap-2 rounded-md bg-color-blue px-5 py-2 text-lg text-white hover:bg-color-blue-light">
-                    <Check size={18} /> Finalizar
+                <button type="submit" disabled={carregando} className="flex items-center gap-2 rounded-md bg-color-blue px-5 py-2 text-lg text-white hover:bg-color-blue-light disabled:cursor-not-allowed disabled:opacity-70">
+                    <Check size={18} /> {carregando ? 'Aguarde...' : 'Finalizar'}
                 </button>
             </div>
         </form>
