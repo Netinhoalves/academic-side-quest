@@ -23,7 +23,10 @@ async function request(path, { method = 'GET', body, token } = {}) {
     const data = raw ? JSON.parse(raw) : null;
 
     if (!response.ok) {
-        throw new Error(data?.detail || data?.message || 'Falha ao comunicar com a API');
+        const detalhe = Array.isArray(data?.detail)
+            ? data.detail.map((item) => item.msg).join('; ')
+            : data?.detail;
+        throw new Error(detalhe || data?.message || 'Falha ao comunicar com a API');
     }
 
     return data;
@@ -87,6 +90,10 @@ export function updatePpc(id, payload, token) {
     return request(`/ppcs/${id}`, { method: 'PUT', body: payload, token });
 }
 
-export function deletePpc(id, token) {
-    return request(`/ppcs/${id}`, { method: 'DELETE', token });
+export function alterarAtivoPpc(id, ativo, token) {
+    return request(`/ppcs/${id}/ativo`, {
+        method: 'PATCH',
+        body: { ativo },
+        token,
+    });
 }

@@ -10,14 +10,15 @@ export default function ListaEntidades({
     renderExtra,
     renderAcoes,
     itemInativo,
+    mostrarAdicionar = true,
 }) {
     return (
         <section className="mx-auto w-full max-w-[1250px]">
             <div className="mb-2 flex items-center justify-between gap-4">
                 <h1 className="text-4xl md:text-5xl">{titulo}</h1>
-                <button type="button" onClick={onAdicionar} className="flex shrink-0 items-center gap-2 rounded-md bg-color-blue px-5 py-3 text-lg text-white shadow-sm hover:bg-color-blue-light">
+                {mostrarAdicionar && <button type="button" onClick={onAdicionar} className="flex shrink-0 items-center gap-2 rounded-md bg-color-blue px-5 py-3 text-lg text-white shadow-sm hover:bg-color-blue-light">
                     <Plus size={21} /> Adicionar {titulo.slice(0, -1)}
-                </button>
+                </button>}
             </div>
 
             <div className="rounded-lg shadow-md">

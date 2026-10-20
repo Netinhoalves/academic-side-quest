@@ -21,7 +21,7 @@ export default function DashboardCoordenador() {
                     icone={<Eye size={64} strokeWidth={2} />} 
                 />
                 
-                {(perfil === 'coordenador' || perfil === 'professor' || perfil === 'docente') && (
+                {perfil === 'coordenador' && (
                     <>
                         <DashboardButton 
                             linkPara="/gerenciar-projetos" 

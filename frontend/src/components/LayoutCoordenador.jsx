@@ -11,7 +11,7 @@ export default function LayoutCoordenador({ children }) {
     const usuario = lerUsuario();
     const perfil = usuario?.perfil?.toLowerCase() || '';
     const permitido = Boolean(localStorage.getItem('asq_token') && usuario)
-        && ['coordenador', 'professor'].includes(perfil);
+        && perfil === 'coordenador';
     const destino = usuario ? rotaDoPerfil(perfil) : '/';
 
     useEffect(() => {

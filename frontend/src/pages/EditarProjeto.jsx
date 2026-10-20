@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import LayoutCoordenador from '../components/LayoutCoordenador';
 import ProjetoForm from '../components/ProjetoForm';
-import { getPpc, updatePpc } from '../services/api';
+import { alterarAtivoPpc, getPpc, updatePpc } from '../services/api';
 
 export default function EditarProjeto() {
     const navigate = useNavigate();
@@ -28,15 +28,20 @@ export default function EditarProjeto() {
         setErro('');
         setCarregando(true);
         const dados = Object.fromEntries(new FormData(event.currentTarget));
+        const ativo = event.currentTarget.elements.ativo.checked;
         try {
             await updatePpc(id, {
+                ...projeto,
                 id_curso: Number(dados.id_curso),
                 nome: dados.titulo,
                 ano: Number(dados.ano),
                 descricao: dados.descricao,
                 total_pontos: Number(dados.pontos),
-                ativo: event.currentTarget.elements.ativo.checked,
             }, localStorage.getItem('asq_token'));
+
+            if (ativo !== projeto.ativo) {
+                await alterarAtivoPpc(id, ativo, localStorage.getItem('asq_token'));
+            }
             navigate('/gerenciar-projetos');
         } catch (error) {
             setErro(error.message || 'Não foi possível editar o projeto');

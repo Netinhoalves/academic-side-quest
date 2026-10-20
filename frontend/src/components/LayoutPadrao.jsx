@@ -4,13 +4,12 @@ import Header from './Header';
 import pixelInf from '../assets/pixel-inferior-cinza.svg';
 import { lerUsuario, rotaDoPerfil } from '../services/sessao';
 
-export default function LayoutPadrao({ children, perfilPermitido, perfisPermitidos = [] }) {
+export default function LayoutPadrao({ children, perfisPermitidos = [] }) {
     const navigate = useNavigate();
     const token = localStorage.getItem('asq_token');
     const usuario = lerUsuario();
     const perfil = usuario?.perfil?.toLowerCase() || '';
-    const perfis = perfisPermitidos.length ? perfisPermitidos : (perfilPermitido ? [perfilPermitido] : []);
-    const permitido = Boolean(token && usuario) && perfis.some((p) => p.toLowerCase() === perfil);
+    const permitido = Boolean(token && usuario) && perfisPermitidos.some((p) => p.toLowerCase() === perfil);
     const destino = token && usuario ? rotaDoPerfil(perfil) : '/';
 
     useEffect(() => {
