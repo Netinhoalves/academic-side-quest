@@ -59,7 +59,7 @@ function EntityActions({ item, inativo, onEditar, renderAcoes }) {
                 <summary className={`flex cursor-pointer list-none items-center gap-3 rounded-md px-5 py-2 text-lg text-white ${inativo ? 'bg-gray-500 hover:bg-gray-600' : 'bg-color-blue hover:bg-color-blue-light'}`}>
                     Ações <ChevronDown size={20} />
                 </summary>
-                <div className="absolute right-0 top-full z-20 mt-1 min-w-[220px] rounded-md bg-color-creme py-2 text-lg text-color-blue shadow-lg">
+                <div onClick={(event) => { event.currentTarget.parentElement.open = false; }} className="absolute right-0 top-full z-20 mt-1 min-w-[220px] rounded-md bg-color-creme py-2 text-lg text-color-blue shadow-lg">
                     {renderAcoes?.(item)}
                     <button type="button" onClick={() => onEditar(item.id)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Editar</button>
                 </div>
