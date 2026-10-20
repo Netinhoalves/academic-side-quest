@@ -70,6 +70,21 @@ export function deleteUser(userId, token) {
     });
 }
 
+export function getCursos() {
+    return request('/cursos');
+}
+
+export function getPpcsPorCurso(idCurso) {
+    return request(`/cursos/${idCurso}/ppcs`);
+}
+
+export function cadastrarAluno(payload) {
+    return request('/auth/cadastro-aluno', {
+        method: 'POST',
+        body: payload
+    });
+}
+
 export const getMe = async (token) => {
     return await request('/me', { token });
 };
