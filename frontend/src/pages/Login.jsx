@@ -70,6 +70,11 @@ export default function Login() {
           </div>
         </form>
 
+        {tipo === 'aluno' && (
+          <p className="mt-8 text-color-blue text-lg tracking-wide text-center">
+            Caso não tenha um acesso, <Link to="/cadastro/aluno" className="text-color-blue-light hover:underline">clique aqui</Link> para criar
+          </p>
+        )}
       </div>
     </div>
   )
