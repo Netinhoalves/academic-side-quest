@@ -96,12 +96,18 @@ def update_user(
 
     updates = data.model_dump(exclude_unset=True) if hasattr(data, "model_dump") else data.dict(exclude_unset=True)
 
+    if user.id == admin.id and (updates.get("ativo") is False or updates.get("id_perfil", user.id_perfil) != user.id_perfil):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Não é permitido desativar nem trocar o perfil do próprio usuário"
+        )
+
     if "id_perfil" in updates and updates["id_perfil"] != user.id_perfil:
         novo_perfil = buscar_perfil(db, updates["id_perfil"])
-        if novo_perfil.nome_perfil == "Administrador":
+        if novo_perfil.nome_perfil not in PERFIS_QUE_PODEM_CRIAR["Administrador"]:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Acesso negado: usuários com perfil Administrador não podem ser criados pela API"
+                detail="Acesso negado: o perfil só pode ser trocado para Coordenador ou Professor"
             )
 
     if "email" in updates and updates["email"] != user.email:
