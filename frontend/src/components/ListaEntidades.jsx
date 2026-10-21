@@ -10,6 +10,7 @@ export default function ListaEntidades({
     renderExtra,
     renderAcoes,
     itemInativo,
+    podeEditar,
     mostrarAdicionar = true,
 }) {
     return (
@@ -42,6 +43,7 @@ export default function ListaEntidades({
                                 item={item}
                                 inativo={inativo}
                                 onEditar={onEditar}
+                                podeEditar={podeEditar?.(item) ?? true}
                                 renderAcoes={renderAcoes}
                             />
                         </div>
@@ -52,7 +54,7 @@ export default function ListaEntidades({
     );
 }
 
-function EntityActions({ item, inativo, onEditar, renderAcoes }) {
+function EntityActions({ item, inativo, onEditar, podeEditar, renderAcoes }) {
     return (
         <div className="relative shrink-0">
             <details className="group">
@@ -61,7 +63,7 @@ function EntityActions({ item, inativo, onEditar, renderAcoes }) {
                 </summary>
                 <div onClick={(event) => { event.currentTarget.parentElement.open = false; }} className="absolute right-0 top-full z-20 mt-1 min-w-[220px] rounded-md bg-color-creme py-2 text-lg text-color-blue shadow-lg">
                     {renderAcoes?.(item)}
-                    <button type="button" onClick={() => onEditar(item.id)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Editar</button>
+                    {podeEditar && <button type="button" onClick={() => onEditar(item.id)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Editar</button>}
                 </div>
             </details>
         </div>
