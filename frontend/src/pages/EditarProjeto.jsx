@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import LayoutCoordenador from '../components/LayoutCoordenador';
 import ProjetoForm from '../components/ProjetoForm';
 import { alterarAtivoPpc, getPpc, updatePpc } from '../services/api';
+import { lerUsuario } from '../services/sessao';
 
 export default function EditarProjeto() {
     const navigate = useNavigate();
@@ -12,6 +13,9 @@ export default function EditarProjeto() {
     const [carregando, setCarregando] = useState(false);
 
     useEffect(() => {
+        // quem não é coordenador é redirecionado pelo LayoutCoordenador: não precisa buscar o PPC
+        if (lerUsuario()?.perfil?.toLowerCase() !== 'coordenador') return;
+
         async function carregarProjeto() {
             try {
                 setProjeto(await getPpc(id, localStorage.getItem('asq_token')));
@@ -53,7 +57,10 @@ export default function EditarProjeto() {
     return (
         <LayoutCoordenador>
             <div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">
-                {erro ? <p className="rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p> : projeto && <ProjetoForm titulo="Editar Projeto" projeto={{ ...projeto, titulo: projeto.nome, pontos: projeto.total_pontos }} onSubmit={handleSubmit} onCancelar={() => navigate('/gerenciar-projetos')} modoEdicao carregando={carregando} />}
+                <div className="w-full max-w-[1000px]">
+                    {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
+                    {projeto && <ProjetoForm titulo="Editar Projeto" projeto={{ ...projeto, titulo: projeto.nome, pontos: projeto.total_pontos }} onSubmit={handleSubmit} onCancelar={() => navigate('/gerenciar-projetos')} modoEdicao carregando={carregando} />}
+                </div>
             </div>
         </LayoutCoordenador>
     );
