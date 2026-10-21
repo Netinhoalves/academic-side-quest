@@ -1,5 +1,6 @@
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -77,8 +78,13 @@ def create_user(
         id_perfil=data.id_perfil,
     )
 
-    db.add(user)
-    db.commit()
+    try:
+        db.add(user)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail ou matrícula já cadastrados")
+
     db.refresh(user)
     return user
 
@@ -132,7 +138,12 @@ def update_user(
     for campo, valor in updates.items():
         setattr(user, campo, valor)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail ou matrícula já cadastrados")
+
     db.refresh(user)
     return user
 
