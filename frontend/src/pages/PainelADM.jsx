@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Pencil, LogOut } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
-import { limparSessao } from '../services/sessao';
+import { lerUsuario, limparSessao } from '../services/sessao';
 import LayoutPadrao from '../components/LayoutPadrao'; 
 
 const camposEdicao = [
@@ -47,7 +47,15 @@ export default function PainelADM() {
     const [erro, setErro] = useState(() => (token ? '' : 'Faça login novamente para acessar o painel administrativo.'));
 
     useEffect(() => {
+        document.title = `Painel ADM | Academic Side Quest`;
+    }, []);
+
+    useEffect(() => {
         let ativo = true;
+        const usuario = lerUsuario();
+        const isAdministrador = usuario?.perfil?.toLowerCase() === 'administrador';
+
+        if (!isAdministrador) return;
 
         if (!token) return;
 
@@ -296,6 +304,11 @@ export default function PainelADM() {
                                 );
                             })}
                         </div>
+                        {!carregando && resultadoFiltrado.length === 0 && (
+                            <div className="px-4 py-6 text-center text-color-blue font-bold">
+                                Nenhum registro encontrado para a busca atual.
+                            </div>
+                        )}
                     </div>
                 </section>
 
