@@ -9,6 +9,10 @@ export default function Inicio() {
     const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
 
     useEffect(() => {
+        document.title = 'Academic Side Quest';
+    }, []);
+
+    useEffect(() => {
         const handleAtalho = (event) => {
             if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'a') {
                 event.preventDefault();

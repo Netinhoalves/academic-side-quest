@@ -33,19 +33,22 @@ export default function Cadastro() {
   }, [tipo]);
 
   useEffect(() => {
-    if (cursoSelecionado) {
-      getPpcsPorCurso(cursoSelecionado)
-        .then((dados) => {
-          const opcoesFormatadas = dados.map(p => ({ value: String(p.id), label: `${p.nome} (${p.ano})` }));
-          setPpcs(opcoesFormatadas);
-          setPpcSelecionado(''); 
-        })
-        .catch(() => setErro('Falha ao carregar a lista de PPCs.'));
-    } else {
-      setPpcs([]);
-      setPpcSelecionado('');
-    }
+    if (!cursoSelecionado) return;
+
+    getPpcsPorCurso(cursoSelecionado)
+      .then((dados) => {
+        const opcoesFormatadas = dados.map(p => ({ value: String(p.id), label: `${p.nome} (${p.ano})` }));
+        setPpcs(opcoesFormatadas);
+      })
+      .catch(() => setErro('Falha ao carregar a lista de PPCs.'));
   }, [cursoSelecionado]);
+
+  const trocarCurso = (e) => {
+    if (e.target.value === cursoSelecionado) return;
+    setCursoSelecionado(e.target.value);
+    setPpcs([]);
+    setPpcSelecionado('');
+  };
 
   const avancarEtapa = () => {
     const nome = document.getElementById('nome');
@@ -62,6 +65,12 @@ export default function Cadastro() {
 
   const handleCadastro = async (e) => {
     e.preventDefault();
+
+    if (!ppcSelecionado) {
+      setErro('Selecione o curso e o PPC.');
+      return;
+    }
+
     setCarregando(true);
     setErro('');
 
@@ -77,7 +86,7 @@ export default function Cadastro() {
         id_ppc: Number(dados.ppc)
       });
 
-      navigate('/login', { state: { mensagemSucesso: 'Cadastro realizado com sucesso! Faça seu login.' }});
+      navigate('/login/aluno', { state: { mensagemSucesso: 'Cadastro realizado com sucesso! Faça seu login.' }});
       
     } catch (error) {
       setErro(error.message || 'Falha ao cadastrar, verifique os dados.');
@@ -111,7 +120,7 @@ export default function Cadastro() {
             <InputField label="Sua senha:" type="password" id="senha" name="senha" required />
 
             <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
-              <Link to="/login" className={`${estiloBotao} w-[130px] py-2 text-lg`}>
+              <Link to="/login/aluno" className={`${estiloBotao} w-[130px] py-2 text-lg`}>
                 Voltar
               </Link>
               <button type="button" onClick={avancarEtapa} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
@@ -129,7 +138,7 @@ export default function Cadastro() {
               name="curso" 
               options={cursos} 
               value={cursoSelecionado}
-              onChange={(e) => setCursoSelecionado(e.target.value)}
+              onChange={trocarCurso}
               required 
             />
             

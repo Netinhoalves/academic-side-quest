@@ -304,6 +304,11 @@ export default function PainelADM() {
                                 );
                             })}
                         </div>
+                        {!carregando && resultadoFiltrado.length === 0 && (
+                            <div className="px-4 py-6 text-center text-color-blue font-bold">
+                                Nenhum registro encontrado para a busca atual.
+                            </div>
+                        )}
                     </div>
                 </section>
 
@@ -425,11 +430,6 @@ export default function PainelADM() {
                                     />
                                 </label>
                             ))}
-                            {!carregando && resultadoFiltrado.length === 0 && (
-                                <div className="max-w-[920px] mx-auto px-4 sm:px-6 pb-8 text-center text-color-blue font-bold">
-                                    Nenhum registro encontrado para a busca atual.
-                                </div>
-                            )}
                             <div className="flex gap-4 mt-4 justify-center">
                                 <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
                                     Voltar
