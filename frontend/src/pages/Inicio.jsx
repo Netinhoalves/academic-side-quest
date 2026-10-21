@@ -46,9 +46,6 @@ export default function Inicio() {
                 </div>
             )}
 
-            <p className="mt-6 text-color-blue text-sm sm:text-base tracking-wide text-center">
-                Atalho do painel administrativo: Ctrl + Alt + A
-            </p>
         </div>
 
     )
