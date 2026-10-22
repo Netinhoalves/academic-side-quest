@@ -1,5 +1,5 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { InputField } from "../components/InputField";
 import pixelSup from '../assets/pixel-superior.png';
 import pixelInf from '../assets/pixel-inferior.png';
@@ -9,10 +9,16 @@ import { rotaDoPerfil } from "../services/sessao";
 export default function Login() {
   const { tipo } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const mensagemSucesso = location.state?.mensagemSucesso;
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState('');
   const tituloFormatado = tipo === 'docente' ? 'Docente' : tipo === 'adm' || tipo === 'admin' || tipo === 'administrador' ? 'Administrador' : 'Aluno';
   const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
+
+  useEffect(() => {
+    document.title = `Login | Academic Side Quest`;
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,8 +30,9 @@ export default function Login() {
 
     try {
       const resposta = await loginApi({ email: dados.email, senha: dados.senha });
-      const usuario = await getMe(resposta.token);
+      
       localStorage.setItem('asq_token', resposta.token);
+      const usuario = await getMe(resposta.token);
       localStorage.setItem('asq_usuario', JSON.stringify(usuario));
 
       navigate(rotaDoPerfil(usuario.perfil));
@@ -51,6 +58,12 @@ export default function Login() {
           </div>
         )}
 
+        {mensagemSucesso && (
+          <div className="w-full max-w-[442px] mb-3 rounded-[10px] bg-color-green border-none  px-3 py-2 text-white text-sm text-center">
+            {mensagemSucesso}
+          </div>
+        )}
+
         <form className="w-full flex flex-col items-center gap-2" onSubmit={handleLogin}>
           <InputField label="Seu e-mail:" type="email" id="email" name="email" required />
           <InputField label="Sua senha:" type="password" id="senha" name="senha" required />
@@ -72,7 +85,7 @@ export default function Login() {
 
         {tipo === 'aluno' && (
           <p className="mt-8 text-color-blue text-lg tracking-wide text-center">
-            Caso não tenha um acesso, <Link to="/cadastro/aluno" className="text-color-blue-light hover:underline">clique aqui</Link> para criar
+            Caso não tenha um acesso, <Link to={`/cadastro/${tipo}`} className="text-color-blue-light hover:underline">clique aqui</Link> para criar
           </p>
         )}
       </div>

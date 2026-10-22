@@ -1,85 +1,54 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { InputField } from "../components/InputField";
 import { SelectField } from "../components/SelectField";
 import pixelSupAzul from '../assets/pixel-superior-azul.svg';
 import pixelInfAzul from '../assets/pixel-inferior-azul.png';
-import { createUser, getProfiles } from '../services/api';
+import { cadastrarAluno, getCursos, getPpcsPorCurso } from '../services/api';
 
 export default function Cadastro() {
-  const tipo = 'aluno';
-  const [etapa, setEtapa] = useState(1); 
-  const [carregando, setCarregando] = useState(false);
-  const [perfis, setPerfis] = useState([]);
-  const [erro, setErro] = useState('');
+  const { tipo = 'aluno' } = useParams();
   const navigate = useNavigate();
+  const [etapa, setEtapa] = useState(1);
+  const [carregando, setCarregando] = useState(false);
+  const [erro, setErro] = useState('');
+  const [cursos, setCursos] = useState([]);
+  const [ppcs, setPpcs] = useState([]);
+  const [cursoSelecionado, setCursoSelecionado] = useState('');
+  const [ppcSelecionado, setPpcSelecionado] = useState('');
 
   useEffect(() => {
-    let ativo = true;
-
-    getProfiles()
-      .then((dados) => {
-        if (ativo) {
-          setPerfis(dados);
-        }
-      })
-      .catch((error) => {
-        if (ativo) {
-          setErro(error.message || 'Não foi possível carregar os perfis');
-        }
-      });
-
-    return () => {
-      ativo = false;
-    };
+    document.title = "Cadastro | Academic Side Quest";
   }, []);
 
-  const perfilDesejado = useMemo(() => {
-    const nomesPermitidos = {
-      aluno: ['Aluno'],
-      docente: ['Docente', 'Professor'],
-      adm: ['Administrador'],
-      admin: ['Administrador'],
-      administrador: ['Administrador'],
-    };
-
-    const nomes = nomesPermitidos[tipo] ?? [tipo ?? ''];
-
-    return perfis.find((perfil) =>
-      nomes.some((nome) => perfil.nome_perfil.toLowerCase() === nome.toLowerCase())
-    );
-  }, [perfis, tipo]);
-
-  const handleCadastro = async (e) => {
-    e.preventDefault();
-    setCarregando(true); 
-    setErro('');
-
-    const formData = new FormData(e.target);
-    const dados = Object.fromEntries(formData);
-
-    const matricula = dados.codigo_aluno || dados.codigo_servidor || '';
-
-    if (!perfilDesejado) {
-      setErro('Perfil correspondente não encontrado no backend');
-      setCarregando(false);
-      return;
+  useEffect(() => {
+    if (tipo === 'aluno') {
+      getCursos()
+        .then((dados) => {
+          const opcoesFormatadas = dados.map(c => ({ value: String(c.id), label: c.nome }));
+          setCursos(opcoesFormatadas);
+        })
+        .catch(() => setErro('Falha ao carregar a lista de cursos.'));
     }
+  }, [tipo]);
 
-    try {
-      await createUser({
-        ...dados,
-        matricula,
-        id_perfil: perfilDesejado.id,
-      });
+  useEffect(() => {
+    if (!cursoSelecionado) return;
 
-      navigate(`/login/${tipo}`);
-    } catch (error) {
-      setErro(error.message || 'Falha ao cadastrar');
-    } finally {
-      setCarregando(false);
-    }
-  }
+    getPpcsPorCurso(cursoSelecionado)
+      .then((dados) => {
+        const opcoesFormatadas = dados.map(p => ({ value: String(p.id), label: `${p.nome} (${p.ano})` }));
+        setPpcs(opcoesFormatadas);
+      })
+      .catch(() => setErro('Falha ao carregar a lista de PPCs.'));
+  }, [cursoSelecionado]);
+
+  const trocarCurso = (e) => {
+    if (e.target.value === cursoSelecionado) return;
+    setCursoSelecionado(e.target.value);
+    setPpcs([]);
+    setPpcSelecionado('');
+  };
 
   const avancarEtapa = () => {
     const nome = document.getElementById('nome');
@@ -89,21 +58,44 @@ export default function Cadastro() {
     if (!nome.checkValidity()) { nome.reportValidity(); return; }
     if (!email.checkValidity()) { email.reportValidity(); return; }
     if (!senha.checkValidity()) { senha.reportValidity(); return; }
+    
+    setErro('');
+    setEtapa(2); 
+  };
 
-    setEtapa(2);
-  }
+  const handleCadastro = async (e) => {
+    e.preventDefault();
+
+    if (!ppcSelecionado) {
+      setErro('Selecione o curso e o PPC.');
+      return;
+    }
+
+    setCarregando(true);
+    setErro('');
+
+    const formData = new FormData(e.target);
+    const dados = Object.fromEntries(formData);
+
+    try {
+      await cadastrarAluno({
+        nome: dados.nome,
+        email: dados.email,
+        senha: dados.senha,
+        matricula: dados.codigo_aluno,
+        id_ppc: Number(dados.ppc)
+      });
+
+      navigate('/login/aluno', { state: { mensagemSucesso: 'Cadastro realizado com sucesso! Faça seu login.' }});
+      
+    } catch (error) {
+      setErro(error.message || 'Falha ao cadastrar, verifique os dados.');
+    } finally {
+      setCarregando(false);
+    }
+  };
 
   const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
-
-  const opcoesCurso = [
-    { value: "ads", label: "Análise e Desenvolvimento de Sistemas" },
-    { value: "eng_software", label: "Engenharia de Software" }
-  ];
-
-  const opcoesPPC = [
-    { value: "2020", label: "PPC 2020" },
-    { value: "2024", label: "PPC 2024" }
-  ];
 
   return (
     <div className="relative min-h-screen bg-color-creme flex items-center justify-center p-4 overflow-hidden font-jaro">
@@ -111,9 +103,8 @@ export default function Cadastro() {
       <img src={pixelInfAzul} alt="" className="absolute bottom-0 right-0 w-32 md:w-auto max-w-[265px]" />
 
       <div className="relative z-10 bg-color-yellow rounded-[15px] shadow-lg w-full max-w-[560px] px-6 py-4 sm:p-6 flex flex-col items-center">
-        
         <h1 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-6 self-start md:ml-6">
-          Cadastro
+          Cadastro de Aluno
         </h1>
 
         {erro && (
@@ -123,71 +114,61 @@ export default function Cadastro() {
         )}
 
         <form className="w-full flex flex-col items-center mb-10 gap-2" onSubmit={handleCadastro}>
-          {/* FLUXO DO DOCENTE */}
-          {tipo === 'docente' && (
-            <>
-              <InputField label="Nome completo:" type="text" id="nome" name="nome" required />
-              <InputField label="Seu código de docente:" type="text" id="codigo_servidor" name="codigo_servidor" required />
-              <InputField label="Seu e-mail:" type="email" id="email" name="email" required/>
-              <InputField label="Sua senha:" type="password" id="senha" name="senha" required/>
+          <div className={`w-full flex-col items-center gap-2 ${etapa === 1 ? 'flex' : 'hidden'}`}>
+            <InputField label="Nome completo:" type="text" id="nome" name="nome" required />
+            <InputField label="Seu e-mail:" type="email" id="email" name="email" required />
+            <InputField label="Sua senha:" type="password" id="senha" name="senha" required />
 
-              <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
-                <Link to={`/login/${tipo}`} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
-                    Voltar
-                </Link>
-                <button 
-                  type="submit" 
-                  disabled={carregando}
-                  className={`${estiloBotao} w-[130px] py-2 text-lg ${carregando ? 'opacity-70 cursor-not-allowed' : ''}`}
-                >
-                    {carregando ? 'Aguarde...' : 'Cadastrar'}
-                </button>
-              </div>
-            </>
-          )}
+            <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
+              <Link to="/login/aluno" className={`${estiloBotao} w-[130px] py-2 text-lg`}>
+                Voltar
+              </Link>
+              <button type="button" onClick={avancarEtapa} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
+                Continuar
+              </button>
+            </div>
+          </div>
 
-          {/* FLUXO DO ALUNO */}
-          {tipo === 'aluno' && (
-            <>
-              {/* ETAPA 1 */}
-              <div className={`w-full flex-col items-center gap-2 ${etapa === 1 ? 'flex' : 'hidden'}`}>
-                <InputField label="Nome completo:" type="text" id="nome" name="nome" required/>
-                <InputField label="Seu e-mail:" type="email" id="email" name="email" required/>
-                <InputField label="Sua senha:" type="password" id="senha" name="senha" required/>
+          <div className={`w-full flex-col items-center gap-2 ${etapa === 2 ? 'flex' : 'hidden'}`}>
+            <InputField label="Sua Matrícula:" type="text" id="codigo_aluno" name="codigo_aluno" required />
+            
+            <SelectField 
+              label="Selecione seu curso:" 
+              id="curso" 
+              name="curso" 
+              options={cursos} 
+              value={cursoSelecionado}
+              onChange={trocarCurso}
+              required 
+            />
+            
+            <SelectField 
+              label="Selecione seu PPC:" 
+              id="ppc" 
+              name="ppc" 
+              options={ppcs}
+              value={ppcSelecionado}
+              onChange={(e) => setPpcSelecionado(e.target.value)}
+              required 
+              disabled={!cursoSelecionado} 
+            />
 
-                <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
-                  <Link to={`/login/${tipo}`} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
-                      Voltar
-                  </Link>
-                  <button type="button" onClick={avancarEtapa} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
-                      Continuar
-                  </button>
-                </div>
-              </div>
+            <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
+              <button type="button" onClick={() => setEtapa(1)} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
+                Voltar
+              </button>
+              <button
+                type="submit"
+                disabled={carregando}
+                className={`${estiloBotao} w-[130px] py-2 text-lg ${carregando ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                {carregando ? 'Aguarde...' : 'Cadastrar'}
+              </button>
+            </div>
+          </div>
 
-              {/* ETAPA 2 */}
-              <div className={`w-full flex-col items-center gap-2 ${etapa === 2 ? 'flex' : 'hidden'}`}>
-                <InputField label="Seu código de aluno:" type="text" id="codigo_aluno" name="codigo_aluno" required />
-                <SelectField label="Selecione seu curso:" id="curso" name="curso" options={opcoesCurso} required />
-                <SelectField label="Selecione seu PPC:" id="ppc" name="ppc" options={opcoesPPC} required />
-
-                <div className="flex gap-4 sm:gap-20 mt-4 w-full justify-center">
-                  <button type="button" onClick={() => setEtapa(1)} className={`${estiloBotao} w-[130px] py-2 text-lg`}>
-                      Voltar
-                  </button>
-                  <button 
-                    type="submit" 
-                    disabled={carregando}
-                    className={`${estiloBotao} w-[130px] py-2 text-lg ${carregando ? 'opacity-70 cursor-not-allowed' : ''}`}
-                  >
-                      {carregando ? 'Aguarde...' : 'Cadastrar'}
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
         </form>
       </div>
     </div>
-  )
+  );
 }

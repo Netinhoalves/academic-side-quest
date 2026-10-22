@@ -11,6 +11,7 @@ export default function ListaEntidades({
     renderExtra,
     renderAcoes,
     itemInativo,
+    podeEditar,
     mostrarAdicionar = true,
     textoAdicionar,
 }) {
@@ -46,6 +47,7 @@ export default function ListaEntidades({
                                 item={item}
                                 inativo={inativo}
                                 onEditar={onEditar}
+                                podeEditar={podeEditar?.(item) ?? true}
                                 renderAcoes={renderAcoes}
                                 aberta={acaoAberta === item.id}
                                 onAlternar={() => setAcaoAberta((atual) => atual === item.id ? null : item.id)}
