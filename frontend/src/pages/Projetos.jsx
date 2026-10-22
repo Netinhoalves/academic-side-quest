@@ -34,12 +34,12 @@ export default function Projetos() {
             {carregando ? <p>Carregando projetos...</p> : <ListaEntidades
                 titulo="Projetos"
                 itens={projetos}
-                mostrarAdicionar={false}
+                onAdicionar={() => navigate('/adicionar-projeto')}
                 onEditar={(id) => navigate(`/editar-projeto/${id}`)}
                 renderTitulo={(projeto) => <>{projeto.nome}<span className="mx-3 text-lg font-normal">•</span><span className="text-lg font-normal">{projeto.ano}</span>{projeto.ativo === false && <span className="ml-3 text-lg font-normal">Inativo</span>}</>}
                 renderDescricao={(projeto) => projeto.descricao}
                 renderExtra={(projeto) => <span className="shrink-0 text-lg">{projeto.total_pontos} pontos</span>}
-                renderAcoes={(projeto) => <><button type="button" className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Gerenciar categorias</button><button type="button" className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Gerenciar alunos</button><button type="button" onClick={() => alternarAtivo(projeto)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">{projeto.ativo === false ? 'Ativar' : 'Desativar'}</button></>}
+                renderAcoes={(projeto) => <><button type="button" onClick={() => navigate(`/projeto/${projeto.id}/categorias`)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Gerenciar categorias</button><button type="button" className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Gerenciar alunos</button><button type="button" onClick={() => alternarAtivo(projeto)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">{projeto.ativo === false ? 'Ativar' : 'Desativar'}</button></>}
                 itemInativo={(projeto) => projeto.ativo === false}
             />}
         </LayoutCoordenador>
