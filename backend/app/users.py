@@ -29,9 +29,9 @@ def buscar_perfil(db: Session, id_perfil: int) -> models.Perfil:
 def list_users(
     id_perfil: Optional[int] = None,
     db: Session = Depends(get_db),
-    admin: models.Usuario = Depends(get_current_admin)
+    usuario: models.Usuario = Depends(get_current_coordenador)
 ):
-    """Lista todos os usuários cadastrados (Requer token de Administrador)."""
+    """Lista todos os usuários cadastrados (Requer token de Coordenador ou Administrador)."""
     query = db.query(models.Usuario)
     if id_perfil:
         query = query.filter(models.Usuario.id_perfil == id_perfil)
