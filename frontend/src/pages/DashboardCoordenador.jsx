@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import {Link} from 'react-router-dom';
 import LayoutPadrao from '../components/LayoutPadrao';
 import DashboardButton from '../components/DashboardButton';
-import {Eye, FileText, ArrowLeft} from 'lucide-react';
+import {Eye, FileText, ArrowLeft, Users} from 'lucide-react';
 import { lerUsuario, limparSessao } from '../services/sessao';
 
 export default function DashboardCoordenador() {
@@ -38,6 +38,12 @@ export default function DashboardCoordenador() {
                             linkPara="/gerenciar-cursos" 
                             texto="Gerenciar Cursos" 
                             icone={<FileText size={64} strokeWidth={2} />}
+                        />
+
+                        <DashboardButton 
+                            linkPara="/painel-adm" 
+                            texto="Gerenciar Servidores" 
+                            icone={<Users size={64} strokeWidth={2} />}
                         />
                     </>
                 )}
