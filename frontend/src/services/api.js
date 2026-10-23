@@ -74,6 +74,29 @@ export function getCursos() {
     return request('/cursos');
 }
 
+export function createCurso(payload, token) {
+    return request('/cursos', {
+        method: 'POST',
+        body: payload,
+        token,
+    });
+}
+
+export function updateCurso(id, payload, token) {
+    return request(`/cursos/${id}`, {
+        method: 'PUT',
+        body: payload,
+        token,
+    });
+}
+
+export function deleteCurso(id, token) {
+    return request(`/cursos/${id}`, {
+        method: 'DELETE',
+        token,
+    });
+}
+
 export function getPpcsPorCurso(idCurso) {
     return request(`/cursos/${idCurso}/ppcs`);
 }
