@@ -4,55 +4,78 @@ Sistema web para alunos enviarem horas complementares e professores validarem. P
 
 ## Como rodar
 
-Passo a passo para quem acabou de clonar o repositório.
+Passo a passo para quem acabou de clonar o repositório. O caminho recomendado inicia **MySQL e API** com Docker Compose; o frontend é iniciado separadamente. Os comandos funcionam no CMD e no PowerShell do Windows; quando são diferentes, aparecem os dois.
 
 ### Pré-requisitos
 
-| Ferramenta | Versão | Para quê |
-|---|---|---|
-| Docker Desktop | versão atual | Banco de dados MySQL |
-| Python | 3.12 ou superior | Backend (API) |
-| Node.js | 22 LTS ou superior | Frontend |
+| Ferramenta | Para quê |
+|---|---|
+| Docker Desktop ou Docker Engine com Docker Compose | Banco de dados MySQL e API |
+| Node.js 22 LTS ou superior | Frontend |
+| Python 3.12 ou superior | Necessário somente para executar o backend manualmente |
 
-### 1. Subir o banco de dados
+### 1. Configurar o ambiente e iniciar MySQL + API
 
-Na raiz do projeto, crie o arquivo `.env` a partir do exemplo e suba o MySQL.
-
-Git Bash:
-
-```bash
-cp .env.example .env
-docker compose up -d
-docker compose ps
-```
-
-CMD (Windows):
+Na raiz do projeto, crie o arquivo `.env` a partir do exemplo:
 
 ```bat
 copy .env.example .env
-docker compose up -d
+```
+
+Se o `.env` já existir, pule este comando: no PowerShell, o `copy` substitui o arquivo sem perguntar.
+
+Gere uma chave secreta para a API:
+
+```bat
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+Se o comando `python` não for encontrado, use `py` no lugar. Copie o valor gerado para `SECRET_KEY=` no arquivo `.env` da **raiz do projeto**. Não compartilhe esse valor nem versione o arquivo `.env`.
+
+Com o `.env` configurado, na raiz do projeto execute:
+
+```bat
+docker compose up -d --build
 docker compose ps
 ```
 
-Confira as configurações do `.env` antes de subir. Esse arquivo pode conter credenciais e não deve ser versionado no Git.
+O primeiro comando constrói a imagem da API e inicia a API e o MySQL em segundo plano. O segundo mostra o estado dos serviços. Aguarde o MySQL aparecer como `healthy`.
 
-O MySQL fica disponível na porta **3307** da máquina local. Na primeira vez, o Docker cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed_base.sql`.
+- API: <http://localhost:8000/>
+- Documentação interativa da API: <http://localhost:8000/docs>
+- MySQL: porta `3307` da máquina local.
 
-### 2. Rodar o backend
+Na primeira inicialização de um volume vazio, o MySQL cria o banco `academic` e executa `backend/database/schema.sql` e `backend/database/seed_base.sql`.
 
-Entre na pasta `backend` e crie o ambiente virtual.
+### 2. Rodar o frontend
 
-Git Bash:
+Em outro terminal, na raiz do projeto:
 
-```bash
-cd backend
-python -m venv venv
-source venv/Scripts/activate
-pip install -r requirements.txt
-cp .env.example .env
+```bat
+cd frontend
+npm install
+npm run dev
 ```
 
-CMD (Windows):
+O Vite mostra no terminal o endereço da aplicação (por padrão, <http://localhost:5173>).
+
+### 3. Executar o backend manualmente (opcional)
+
+Use esta alternativa somente se quiser executar a API fora do container. Se o serviço `api` do Compose já estiver usando a porta `8000`, pare apenas esse serviço antes de iniciar o backend manualmente:
+
+```bat
+docker compose stop api
+```
+
+Na raiz do projeto, inicie o MySQL pelo Compose:
+
+```bat
+docker compose up -d mysql
+```
+
+Depois, entre na pasta `backend`, crie o ambiente virtual e ative-o.
+
+CMD:
 
 ```bat
 cd backend
@@ -62,33 +85,38 @@ pip install -r requirements.txt
 copy .env.example .env
 ```
 
-Gere uma `SECRET_KEY` (a API não inicia sem ela):
+PowerShell:
 
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
+```powershell
+cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env
 ```
 
-Copie o valor gerado para a linha `SECRET_KEY=` do arquivo `backend/.env`. As demais variáveis do exemplo já estão alinhadas com o `compose.yml`.
+Se o PowerShell disser que a execução de scripts está desabilitada, rode uma vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, confirme e ative o ambiente virtual de novo.
 
-Com o ambiente virtual ativo, ainda dentro de `backend/`, inicie a API (o comando é o mesmo no Git Bash e no CMD):
+Se o `backend/.env` já existir, não rode o `copy` (no PowerShell ele substitui o arquivo sem perguntar). Gere uma chave secreta com o comando indicado na etapa 1 e substitua o marcador `SECRET_KEY=` em `backend/.env`. Em execução manual, esse arquivo também precisa conter a `DATABASE_URL` apontando para `localhost:3307`.
 
-```bash
+Com o ambiente virtual ativo e ainda dentro de `backend/`, inicie a API:
+
+```bat
 uvicorn app.main:app --reload
 ```
 
-Abra a documentação interativa em <http://localhost:8000/docs>.
+A documentação interativa fica em <http://localhost:8000/docs>.
 
-### 3. Rodar o frontend
+### 4. Rodar os testes do backend (opcional)
 
-Em outro terminal, na raiz do projeto (o comando é o mesmo no Git Bash e no CMD):
+Os testes automatizados usam o pytest. Com o MySQL rodando (`docker compose up -d mysql`) e o ambiente virtual ativo, dentro de `backend/`:
 
-```bash
-cd frontend
-npm install
-npm run dev
+```bat
+pip install -r requirements-dev.txt
+pytest -v
 ```
 
-O Vite mostra no terminal o endereço da aplicação (por padrão, <http://localhost:5173>).
+A cada execução, os testes criam do zero um banco separado, o `academic_test`, e não mexem no banco `academic` do dia a dia. Eles entram no MySQL com o usuário `root`, usando o `MYSQL_ROOT_PASSWORD` do `.env` da raiz.
 
 ## Usuários de teste
 
@@ -99,32 +127,37 @@ O Vite mostra no terminal o endereço da aplicação (por padrão, <http://local
 | Professor | professor@teste.com | 123456 |
 | Aluno | aluno@teste.com | 123456 |
 
+O administrador entra pela mesma tela de login dos outros perfis (ou direto em <http://localhost:5173/login/adm>) e cai no painel administrativo.
+
 ## Problemas comuns
 
 | Sintoma | Solução |
 |---|---|
-| `SECRET_KEY não definida. Configure-a no arquivo backend/.env` | Rode o `uvicorn` de dentro da pasta `backend/` e confira se o `backend/.env` existe e tem a `SECRET_KEY` preenchida. |
-| `ModuleNotFoundError: No module named 'app'` | O `uvicorn` foi executado fora da pasta `backend/`. Entre em `backend/` e rode o comando de novo. |
+| `SECRET_KEY` ausente ou vazia | No fluxo Docker, confira se `SECRET_KEY` está preenchida no `.env` da raiz. Na execução manual, confira `backend/.env`. Não compartilhe a chave nem versione esses arquivos. |
+| `ModuleNotFoundError: No module named 'app'` | Na execução manual, entre em `backend/`, ative o ambiente virtual e rode o comando `uvicorn` novamente. |
 | Tabelas novas não aparecem no banco | Os scripts de inicialização só são executados quando o volume do banco é criado pela primeira vez. Alterações no schema exigem um procedimento de atualização ou recriação planejada do banco. |
-| Container MySQL fica em `Restarting` | Falta o `.env` na raiz do projeto. Crie-o com `cp .env.example .env` (ou `copy .env.example .env` no CMD) e rode `docker compose up -d` de novo. |
+| API não inicia ou reinicia | Confira os logs com `docker compose logs api`. Verifique se o `.env` da raiz existe e contém `SECRET_KEY` preenchida. |
+| No PowerShell, o `Activate.ps1` não roda porque a execução de scripts está desabilitada | Rode uma vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` e ative o ambiente virtual de novo. |
+| Porta `8000` já está em uso ao rodar o `uvicorn` | A API do Docker já está usando a porta. Pare com `docker compose stop api` ou use a API do container. |
+| Os testes param com "Não consegui conectar no MySQL" | Suba o banco com `docker compose up -d mysql` e rode o `pytest` de novo. |
 
 ## Banco de dados
 
-O projeto utiliza MySQL 8.0 via Docker Compose no ambiente de desenvolvimento.
+O projeto utiliza MySQL 8.0 e a API FastAPI via Docker Compose no ambiente de desenvolvimento.
 
-### Parar o banco de dados
+### Parar os serviços
 
-Para parar e remover os containers do projeto:
+Para parar e remover os containers da API e do MySQL:
 
-```bash
+```bat
 docker compose down
 ```
 
-Esse comando não remove o volume do banco, então os dados continuam na próxima vez que o banco subir.
+Esse comando remove os containers da API e do MySQL, mas não remove o volume do banco; os dados continuam disponíveis quando os serviços forem iniciados novamente.
 
 Para recriar o banco do zero, incluindo schema e seed, remova também o volume:
 
-```bash
+```bat
 docker compose down -v
 docker compose up -d
 ```
@@ -156,44 +189,43 @@ Para validar o schema sem afetar os dados do projeto, utilize um banco de testes
 
 Crie um banco exclusivo para testar o schema. O nome `academic_schema_test` abaixo é apenas um exemplo; cada integrante pode escolher outro nome. O comando de criação não apaga um banco que já existe.
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"'
+Cada comando `mysql` abaixo pede a senha do usuário `root` do MySQL: é o valor de `MYSQL_ROOT_PASSWORD` no `.env` da raiz (`root_dev`, se você não mudou).
+
+```bat
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 -e "CREATE DATABASE IF NOT EXISTS academic_schema_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
 ```
 
-Aplique o schema:
+Copie o schema e os dados iniciais para dentro do container e aplique os dois. Se mudar o `schema.sql` ou o `seed_base.sql`, copie de novo antes de aplicar:
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/schema.sql
+```bat
+docker compose cp backend/database/schema.sql mysql:/tmp/schema.sql
+docker compose cp backend/database/seed_base.sql mysql:/tmp/seed_base.sql
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "source /tmp/schema.sql"
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "source /tmp/seed_base.sql"
 ```
 
-Aplique os dados iniciais:
+Se os comandos não derem erros, confira as tabelas:
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" academic_schema_test' < backend/database/seed_base.sql
-```
-
-Se o comando não der erros, confira as tabelas:
-
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW TABLES;"'
+```bat
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "SHOW TABLES;"
 ```
 
 Confira a estrutura do PPC:
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SHOW CREATE TABLE PPC\G"'
+```bat
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "SHOW CREATE TABLE PPC\G"
 ```
 
 Confira as chaves estrangeiras:
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT COUNT(*) AS total_chaves_estrangeiras FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;"'
+```bat
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "SELECT COUNT(*) AS total_chaves_estrangeiras FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL;"
 ```
 
 Confira os perfis padrão:
 
-```bash
-docker compose exec -T mysql sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -D academic_schema_test -e "SELECT id, nome_perfil FROM Perfil ORDER BY id;"'
+```bat
+docker compose exec mysql mysql -uroot -p --default-character-set=utf8mb4 academic_schema_test -e "SELECT id, nome_perfil FROM Perfil ORDER BY id;"
 ```
 
 O resultado esperado para o schema atual é de 9 tabelas, 11 chaves estrangeiras e 4 perfis padrão.
@@ -245,15 +277,15 @@ O aluno envia os certificados das atividades complementares, o professor ou o co
 | Perfil | O que faz |
 |---|---|
 | Aluno | Cadastra-se sozinho, envia horas complementares com o certificado e acompanha seu progresso. |
-| Professor | Cadastrado pelo coordenador. Valida as horas enviadas pelos alunos. |
+| Professor | Cadastrado pelo coordenador ou pelo administrador. Valida as horas enviadas pelos alunos. |
 | Coordenador | Cadastrado pelo administrador. Cadastra curso, PPC e professores, e também valida horas. |
-| Administrador | Cadastra coordenadores. Não é criado pela API. |
+| Administrador | Cadastra coordenadores e professores. Não é criado pela API. |
 
 ## Tecnologias
 
 | Camada | Tecnologias |
 |---|---|
-| Backend | Python, FastAPI, SQLAlchemy 2, PyMySQL, PyJWT, bcrypt, python-dotenv, Uvicorn |
+| Backend | Python, FastAPI, SQLAlchemy 2, PyMySQL, PyJWT, bcrypt, python-dotenv, Uvicorn, pytest |
 | Banco de dados | MySQL 8.0, Docker Compose |
 | Frontend | React 19, Vite, Tailwind CSS 3 |
 
@@ -266,13 +298,17 @@ academic-side-quest/
 │   ├── database/
 │   │   ├── schema.sql       # estrutura do banco
 │   │   └── seed_base.sql    # dados iniciais de teste
-│   ├── .env.example         # variáveis do backend
-│   └── requirements.txt
+│   ├── tests/               # testes automatizados (pytest)
+│   ├── .env.example         # variáveis para execução manual do backend
+│   ├── Dockerfile           # imagem da API
+│   ├── pytest.ini           # configuração dos testes
+│   ├── requirements.txt
+│   └── requirements-dev.txt # dependências dos testes
 ├── frontend/                # React + Vite + Tailwind
 │   ├── public/
 │   └── src/
-├── .env.example             # variáveis do MySQL (usadas pelo compose.yml)
-├── compose.yml              # MySQL 8.0 via Docker
+├── .env.example             # variáveis do MySQL e da API (usadas pelo compose.yml)
+├── compose.yml              # MySQL 8.0 + API via Docker Compose
 ├── LICENSE
 └── README.md
 ```

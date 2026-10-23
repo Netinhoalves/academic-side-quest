@@ -3,7 +3,7 @@ import unicodedata
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Annotated, List, Literal, Optional
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StringConstraints, field_validator, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, PlainSerializer, StringConstraints, ValidationInfo, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
 # Valores de pontos saem como número no JSON (o padrão do Pydantic para Decimal é texto, "275.00")
@@ -19,6 +19,46 @@ def chave_comparacao(texto: str) -> str:
     sem_acento = unicodedata.normalize("NFKD", texto)
     return "".join(c for c in sem_acento if not unicodedata.combining(c)).casefold()
 
+def validar_nome(valor: str) -> str:
+    """Tira os espaços das pontas e confere o tamanho do nome (de 3 a 150 caracteres)."""
+    valor = valor.strip()
+    if len(valor) < 3:
+        raise PydanticCustomError("valor_invalido", "O nome deve ter pelo menos 3 caracteres")
+    if len(valor) > 150:
+        raise PydanticCustomError("valor_invalido", "O nome deve ter no máximo 150 caracteres")
+    return valor
+
+def validar_email(valor: str) -> str:
+    """Padroniza o e-mail em minúsculas e confere o formato e o tamanho (até 150 caracteres)."""
+    valor = valor.strip().lower()
+    if len(valor) > 150:
+        raise PydanticCustomError("valor_invalido", "O e-mail deve ter no máximo 150 caracteres")
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
+        raise PydanticCustomError("valor_invalido", "E-mail inválido")
+    return valor
+
+def validar_senha(valor: str) -> str:
+    """Confere o tamanho da senha: pelo menos 6 caracteres e no máximo 72 bytes (limite do bcrypt)."""
+    if len(valor) < 6:
+        raise PydanticCustomError("valor_invalido", "A senha deve ter pelo menos 6 caracteres")
+    if len(valor.encode("utf-8")) > 72:
+        raise PydanticCustomError("valor_invalido", "A senha deve ter no máximo 72 bytes")
+    return valor
+
+def validar_matricula_servidor(valor: Optional[str]) -> Optional[str]:
+    """A matrícula de servidor é opcional: em branco vira None, para não repetir "" na coluna UNIQUE."""
+    if valor is None or not valor.strip():
+        return None
+    valor = valor.strip()
+    if len(valor) > 30:
+        raise PydanticCustomError("valor_invalido", "A matrícula deve ter no máximo 30 caracteres")
+    return valor
+
+Nome = Annotated[str, AfterValidator(validar_nome)]
+Email = Annotated[str, AfterValidator(validar_email)]
+Senha = Annotated[str, AfterValidator(validar_senha)]
+MatriculaServidor = Annotated[Optional[str], AfterValidator(validar_matricula_servidor)]
+
 class Profile(BaseModel):
     id: int
     nome_perfil: str
@@ -32,15 +72,26 @@ class BaseUser(BaseModel):
     id_perfil: int
 
 class CreateUser(BaseUser):
-    senha: str
+    nome: Nome
+    email: Email
+    matricula: MatriculaServidor = None
+    senha: Senha
 
 class UpdateUser(BaseModel):
-    nome: Optional[str] = None
-    email: Optional[str] = None
-    senha: Optional[str] = None
-    matricula: Optional[str] = None
+    nome: Optional[Nome] = None
+    email: Optional[Email] = None
+    senha: Optional[Senha] = None
+    matricula: MatriculaServidor = None
     id_perfil: Optional[int] = None
     ativo: Optional[bool] = None
+
+    @field_validator("nome", "email", "senha", "id_perfil", "ativo", mode="before")
+    @classmethod
+    def recusar_nulo(cls, valor, info: ValidationInfo):
+        """Esses campos podem ficar de fora do JSON, mas não podem vir como null (as colunas são NOT NULL)."""
+        if valor is None:
+            raise PydanticCustomError("valor_invalido", f"O campo {info.field_name} não pode ser nulo")
+        return valor
 
 class User(BaseUser):
     id: int
@@ -225,31 +276,12 @@ class Aluno(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class CadastroAluno(BaseModel):
-    nome: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=150)]
-    email: Annotated[str, StringConstraints(strip_whitespace=True)]
-    senha: str
+    nome: Nome
+    email: Email
+    senha: Senha
     matricula: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]
     id_ppc: int
     data_ingresso: Optional[date] = None
-
-    @field_validator("email")
-    @classmethod
-    def validar_email(cls, valor: str) -> str:
-        valor = valor.lower()
-        if len(valor) > 150:
-            raise PydanticCustomError("valor_invalido", "O e-mail deve ter no máximo 150 caracteres")
-        if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", valor):
-            raise PydanticCustomError("valor_invalido", "E-mail inválido")
-        return valor
-
-    @field_validator("senha")
-    @classmethod
-    def validar_senha(cls, valor: str) -> str:
-        if len(valor) < 6:
-            raise PydanticCustomError("valor_invalido", "A senha deve ter pelo menos 6 caracteres")
-        if len(valor.encode("utf-8")) > 72:
-            raise PydanticCustomError("valor_invalido", "A senha deve ter no máximo 72 bytes")
-        return valor
 
     @field_validator("data_ingresso")
     @classmethod
