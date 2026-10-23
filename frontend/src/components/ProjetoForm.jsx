@@ -11,10 +11,7 @@ export default function ProjetoForm({
     carregando = false,
     submitLabel,
 }) {
-    const [opcoesCursos, setOpcoesCursos] = useState([
-        { value: '', label: 'Carregando cursos...' },
-    ]);
-
+    const [opcoesCursos, setOpcoesCursos] = useState(null)
     useEffect(() => {
         getCursos()
             .then((lista) => {
