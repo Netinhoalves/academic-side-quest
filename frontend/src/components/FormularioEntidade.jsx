@@ -1,4 +1,4 @@
-import { Check, X } from 'lucide-react';
+import { ArrowLeft, Check, X } from 'lucide-react';
 
 export default function FormularioEntidade({
     titulo,
@@ -8,6 +8,9 @@ export default function FormularioEntidade({
     onSubmit,
     onCancelar,
     carregando = false,
+    mostrarAtivo = modoEdicao,
+    submitLabel = 'Finalizar',
+    mostrarVoltar = false,
 }) {
     return (
         <form onSubmit={onSubmit} className="w-full max-w-[1000px] rounded-lg bg-color-yellow px-8 py-6 shadow-sm">
@@ -19,14 +22,18 @@ export default function FormularioEntidade({
                         {campo.label}:
                         {campo.type === 'textarea' ? (
                             <textarea name={campo.name} defaultValue={valoresIniciais[campo.name] || ''} placeholder={campo.placeholder} required={campo.required !== false} rows="3" className="mt-1 block w-full resize-none rounded-md bg-[#FFDBAD] px-2 py-2 text-base outline-none focus:ring-2 focus:ring-color-blue" />
+                        ) : campo.type === 'select' ? (
+                            <select name={campo.name} defaultValue={valoresIniciais[campo.name] || campo.options[0].value} required={campo.required !== false} className="mt-1 block h-10 w-full rounded-md bg-[#FFDBAD] px-2 text-base outline-none focus:ring-2 focus:ring-color-blue">
+                                {campo.options.map((opcao) => <option key={opcao.value} value={opcao.value}>{opcao.label}</option>)}
+                            </select>
                         ) : (
-                            <input name={campo.name} type={campo.type || 'text'} defaultValue={valoresIniciais[campo.name] || ''} placeholder={campo.placeholder} required={campo.required !== false} className="mt-1 block h-10 w-full rounded-md bg-[#FFDBAD] px-2 text-base outline-none focus:ring-2 focus:ring-color-blue" />
+                            <input name={campo.name} type={campo.type || 'text'} min={campo.min} max={campo.max} step={campo.step} defaultValue={valoresIniciais[campo.name] || ''} placeholder={campo.placeholder} required={campo.required !== false} className="mt-1 block h-10 w-full rounded-md bg-[#FFDBAD] px-2 text-base outline-none focus:ring-2 focus:ring-color-blue" />
                         )}
                     </label>
                 ))}
             </div>
 
-            {modoEdicao && (
+            {mostrarAtivo && (
                 <label className="mt-4 flex items-center gap-3 text-lg">
                     <input name="ativo" type="checkbox" defaultChecked={valoresIniciais.ativo !== false} className="h-5 w-5 accent-color-blue" />
                     Ativo
@@ -34,13 +41,13 @@ export default function FormularioEntidade({
             )}
 
             <div className="mt-4 flex justify-end gap-3">
-                {modoEdicao && (
+                {(modoEdicao || mostrarVoltar) && onCancelar && (
                     <button type="button" onClick={onCancelar} className="flex items-center gap-2 rounded-md bg-color-blue px-5 py-2 text-lg text-white hover:bg-color-blue-light">
-                        <X size={18} /> Cancelar
+                        {modoEdicao ? <X size={18} /> : <ArrowLeft size={18} />} {modoEdicao ? 'Cancelar' : 'Voltar'}
                     </button>
                 )}
                 <button type="submit" disabled={carregando} className="flex items-center gap-2 rounded-md bg-color-blue px-5 py-2 text-lg text-white hover:bg-color-blue-light disabled:cursor-not-allowed disabled:opacity-70">
-                    <Check size={18} /> {carregando ? 'Aguarde...' : 'Finalizar'}
+                    <Check size={18} /> {carregando ? 'Aguarde...' : submitLabel}
                 </button>
             </div>
         </form>

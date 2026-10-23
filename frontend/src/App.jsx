@@ -8,6 +8,12 @@ import DashboardCoordenador from './pages/DashboardCoordenador';
 import Projetos from './pages/Projetos';
 import AdicionarProjeto from './pages/AdicionarProjeto';
 import EditarProjeto from './pages/EditarProjeto';
+import Categorias from './pages/Categorias';
+import AdicionarCategoria from './pages/AdicionarCategoria';
+import EditarCategoria from './pages/EditarCategoria';
+import Subcategorias from './pages/Subcategorias';
+import AdicionarSubcategoria from './pages/AdicionarSubcategoria';
+import EditarSubcategoria from './pages/EditarSubcategoria';
 
 function App() {
   return(
@@ -22,7 +28,16 @@ function App() {
         <Route path="/coordenador" element={<DashboardCoordenador />} />
         <Route path="/gerenciar-projetos" element={<Projetos />} />
         <Route path="/adicionar-projeto" element={<AdicionarProjeto />} />
+        <Route path="/adicionar-projeto/categoria" element={<AdicionarCategoria />} />
+        <Route path="/adicionar-projeto/subcategoria" element={<AdicionarSubcategoria />} />
         <Route path="/editar-projeto/:id" element={<EditarProjeto />} />
+        <Route path="/projeto/:projetoId/categorias" element={<Categorias />} />
+        <Route path="/projeto/:projetoId/categorias/adicionar" element={<AdicionarCategoria />} />
+        <Route path="/projeto/:projetoId/categorias/adicionar/subcategoria" element={<AdicionarSubcategoria />} />
+        <Route path="/projeto/:projetoId/categorias/:categoriaId/editar" element={<EditarCategoria />} />
+        <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias" element={<Subcategorias />} />
+        <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias/adicionar" element={<AdicionarSubcategoria />} />
+        <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias/:subcategoriaId/editar" element={<EditarSubcategoria />} />
       </Routes>
     </BrowserRouter>
   )
