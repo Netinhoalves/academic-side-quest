@@ -98,3 +98,26 @@ def test_edicao_pelo_painel_com_matricula_null_continua_funcionando(client, cabe
     resposta = client.put(f"/usuarios/{eu['id']}", json=corpo, headers=cabecalho_admin)
 
     assert resposta.status_code == 200
+
+
+def test_coordenador_lista_so_professores(client, cabecalho_coordenador):
+    todos = client.get("/usuarios", headers=cabecalho_coordenador)
+    administradores = client.get("/usuarios", params={"id_perfil": 4}, headers=cabecalho_coordenador)
+
+    assert todos.status_code == 200
+    assert todos.json() and {usuario["id_perfil"] for usuario in todos.json()} == {2}
+    assert administradores.json() == []
+
+
+def test_admin_lista_todos_os_perfis(client, cabecalho_admin):
+    resposta = client.get("/usuarios", headers=cabecalho_admin)
+
+    assert resposta.status_code == 200
+    assert {usuario["id_perfil"] for usuario in resposta.json()} == {1, 2, 3, 4}
+
+
+@pytest.mark.parametrize("quem", ["professor", "aluno"])
+def test_professor_e_aluno_nao_listam_usuarios(client, request, quem):
+    resposta = client.get("/usuarios", headers=request.getfixturevalue(f"cabecalho_{quem}"))
+
+    assert resposta.status_code == 403
