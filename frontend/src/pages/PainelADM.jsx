@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Pencil, LogOut } from 'lucide-react'; 
+import { Pencil, LogOut, ArrowLeft } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
 import { lerUsuario, limparSessao } from '../services/sessao';
@@ -103,7 +103,7 @@ export default function PainelADM() {
                 .map((p) => ({ value: String(p.id), label: p.nome_perfil }));
         }
         return perfis
-            .filter((p) => !['aluno', 'estudante'].includes(p.nome_perfil.toLowerCase()))
+            .filter((p) => ['coordenador', 'professor'].includes(p.nome_perfil.toLowerCase()))
             .map((p) => ({ value: String(p.id), label: p.nome_perfil }));
     }, [perfis, perfilLogado]);
 
@@ -301,14 +301,16 @@ export default function PainelADM() {
                                                     <p className="text-color-blue sm:text-right">Atualizado em: {formatarData(item.updated_at)}</p>
                                                 </div>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => abrirModal(item)}
-                                                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-color-blue hover:text-color-blue-light transition-colors"
-                                                aria-label={`Editar ${item.nome}`}
-                                            >
-                                                <Pencil aria-hidden="true" className="w-8 h-8" />
-                                            </button>
+                                            {perfilLogado === 'administrador' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => abrirModal(item)}
+                                                    className="absolute top-3 right-3 sm:top-4 sm:right-4 text-color-blue hover:text-color-blue-light transition-colors"
+                                                    aria-label={`Editar ${item.nome}`}
+                                                >
+                                                    <Pencil aria-hidden="true" className="w-8 h-8" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -334,11 +336,13 @@ export default function PainelADM() {
 
                 <div className="w-full flex justify-center mt-12">
                     <Link 
-                        to="/" 
-                        onClick={limparSessao} 
+                        to={perfilLogado === 'coordenador' ? '/coordenador' : '/'} 
+                        onClick={perfilLogado === 'coordenador' ? undefined : limparSessao} 
                         className="bg-color-blue text-white font-jaro tracking-widest px-6 py-2 rounded-md hover:scale-105 transition-transform flex items-center gap-2 shadow-md text-lg"
                     >
-                        Sair do Painel <LogOut size={20} strokeWidth={3} />
+                        {perfilLogado === 'coordenador' 
+                            ? <>Voltar ao início <ArrowLeft size={20} strokeWidth={3} /></>
+                            : <>Sair do Painel <LogOut size={20} strokeWidth={3} /></>}
                     </Link>
                 </div>
             </div>
@@ -351,6 +355,7 @@ export default function PainelADM() {
 
                         <div className="relative z-10 p-5 sm:p-6">
                             <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
+                            {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
 
                             <div className="grid gap-3">
                                 <div className="grid gap-3 sm:grid-cols-2">
@@ -421,6 +426,7 @@ export default function PainelADM() {
                 <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
                     <div className="w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] p-5 sm:p-6">
                         <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
+                        {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
                         <form onSubmit={cadastrarDocente} className="grid gap-3">
                             <div className="grid gap-3 sm:grid-cols-2">
                                 {[

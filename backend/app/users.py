@@ -29,10 +29,12 @@ def buscar_perfil(db: Session, id_perfil: int) -> models.Perfil:
 def list_users(
     id_perfil: Optional[int] = None,
     db: Session = Depends(get_db),
-    usuario: models.Usuario = Depends(get_current_coordenador)
+    usuario_atual: models.Usuario = Depends(get_current_coordenador)
 ):
-    """Lista todos os usuários cadastrados (Requer token de Coordenador ou Administrador)."""
+    """Lista os usuários: o Administrador vê todos e o Coordenador só os professores (Requer token de Coordenador ou Administrador)."""
     query = db.query(models.Usuario)
+    if usuario_atual.perfil.nome_perfil == "Coordenador":
+        query = query.filter(models.Usuario.perfil.has(models.Perfil.nome_perfil.in_(PERFIS_QUE_PODEM_CRIAR["Coordenador"])))
     if id_perfil:
         query = query.filter(models.Usuario.id_perfil == id_perfil)
     return query.all()
