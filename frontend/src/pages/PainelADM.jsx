@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Pencil, LogOut } from 'lucide-react'; 
+import { Pencil, LogOut, ArrowLeft } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
 import { lerUsuario, limparSessao } from '../services/sessao';
@@ -32,6 +32,8 @@ const formatarData = (valor) => {
 };
 
 export default function PainelADM() {
+    const usuarioLogado = lerUsuario();
+    const perfilLogado = usuarioLogado?.perfil?.toLowerCase() || '';
     const [token] = useState(() => localStorage.getItem('asq_token'));
     const [pesquisa, setPesquisa] = useState('');
     const [filtro, setFiltro] = useState('todos');
@@ -40,7 +42,7 @@ export default function PainelADM() {
     const [linhaAberta, setLinhaAberta] = useState(null);
     const [modalAberto, setModalAberto] = useState(false);
     const [cadastroDocenteAberto, setCadastroDocenteAberto] = useState(false);
-    const [cadastroDocente, setCadastroDocente] = useState({ nome: '', matricula: '', email: '', senha: '' });
+    const [cadastroDocente, setCadastroDocente] = useState({ nome: '', matricula: '', email: '', senha: '', id_perfil: '' });
     const [formulario, setFormulario] = useState(null);
     const [carregando, setCarregando] = useState(() => Boolean(token));
     const [salvando, setSalvando] = useState(false);
@@ -52,10 +54,9 @@ export default function PainelADM() {
 
     useEffect(() => {
         let ativo = true;
-        const usuario = lerUsuario();
-        const isAdministrador = usuario?.perfil?.toLowerCase() === 'administrador';
+        const temAcesso = perfilLogado === 'administrador' || perfilLogado === 'coordenador';
 
-        if (!isAdministrador) return;
+        if (!temAcesso) return;
 
         if (!token) return;
 
@@ -82,7 +83,7 @@ export default function PainelADM() {
         return () => {
             ativo = false;
         };
-    }, [token]);
+    }, [token, perfilLogado]);
 
     const perfisPorId = useMemo(() => {
         return new Map(perfis.map((perfil) => [String(perfil.id), perfil.nome_perfil]));
@@ -94,6 +95,17 @@ export default function PainelADM() {
             ...perfis.map((perfil) => ({ value: String(perfil.id), label: perfil.nome_perfil })),
         ];
     }, [perfis]);
+
+    const opcoesPerfilCadastro = useMemo(() => {
+        if (perfilLogado === 'coordenador') {
+            return perfis
+                .filter((p) => ['docente', 'professor'].includes(p.nome_perfil.toLowerCase()))
+                .map((p) => ({ value: String(p.id), label: p.nome_perfil }));
+        }
+        return perfis
+            .filter((p) => ['coordenador', 'professor'].includes(p.nome_perfil.toLowerCase()))
+            .map((p) => ({ value: String(p.id), label: p.nome_perfil }));
+    }, [perfis, perfilLogado]);
 
     const resultadoFiltrado = useMemo(() => {
         const termo = pesquisa.trim().toLowerCase();
@@ -125,7 +137,7 @@ export default function PainelADM() {
 
     const fecharCadastroDocente = () => {
         setCadastroDocenteAberto(false);
-        setCadastroDocente({ nome: '', matricula: '', email: '', senha: '' });
+        setCadastroDocente({ nome: '', matricula: '', email: '', senha: '', id_perfil: '' });
     };
 
     const cadastrarDocente = async (event) => {
@@ -133,23 +145,21 @@ export default function PainelADM() {
         setSalvando(true);
         setErro('');
 
-        const perfilDocente = perfis.find((perfil) => ['docente', 'professor'].includes(perfil.nome_perfil.toLowerCase()));
-
-        if (!perfilDocente) {
-            setErro('Perfil de docente não encontrado no backend');
+        if (!cadastroDocente.id_perfil) {
+            setErro('Por favor, selecione um perfil.');
             setSalvando(false);
             return;
         }
 
         try {
             const criado = await createUser(
-                { ...cadastroDocente, id_perfil: perfilDocente.id },
+                { ...cadastroDocente, id_perfil: Number(cadastroDocente.id_perfil) },
                 token
             );
             setDados((atual) => [...atual, criado]);
             fecharCadastroDocente();
         } catch (error) {
-            setErro(error.message || 'Falha ao cadastrar docente');
+            setErro(error.message || 'Falha ao cadastrar servidor');
         } finally {
             setSalvando(false);
         }
@@ -208,7 +218,7 @@ export default function PainelADM() {
     const estiloBotao = 'bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center';
 
     return (
-        <LayoutPadrao perfisPermitidos={['Administrador']}>
+        <LayoutPadrao perfisPermitidos={['Administrador', 'Coordenador']}>
             <div className="w-full max-w-[920px] mx-auto pb-12">
                 <section className="p-0">
                     {erro && (
@@ -291,14 +301,16 @@ export default function PainelADM() {
                                                     <p className="text-color-blue sm:text-right">Atualizado em: {formatarData(item.updated_at)}</p>
                                                 </div>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => abrirModal(item)}
-                                                className="absolute top-3 right-3 sm:top-4 sm:right-4 text-color-blue hover:text-color-blue-light transition-colors"
-                                                aria-label={`Editar ${item.nome}`}
-                                            >
-                                                <Pencil aria-hidden="true" className="w-8 h-8" />
-                                            </button>
+                                            {perfilLogado === 'administrador' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => abrirModal(item)}
+                                                    className="absolute top-3 right-3 sm:top-4 sm:right-4 text-color-blue hover:text-color-blue-light transition-colors"
+                                                    aria-label={`Editar ${item.nome}`}
+                                                >
+                                                    <Pencil aria-hidden="true" className="w-8 h-8" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
@@ -318,17 +330,19 @@ export default function PainelADM() {
                         onClick={() => setCadastroDocenteAberto(true)}
                         className={`${estiloBotao} px-4 py-2 text-base sm:text-lg shadow-md`}
                     >
-                        Cadastro de Docente
+                        Cadastro de Servidor
                     </button>
                 </div>
 
                 <div className="w-full flex justify-center mt-12">
                     <Link 
-                        to="/" 
-                        onClick={limparSessao} 
+                        to={perfilLogado === 'coordenador' ? '/coordenador' : '/'} 
+                        onClick={perfilLogado === 'coordenador' ? undefined : limparSessao} 
                         className="bg-color-blue text-white font-jaro tracking-widest px-6 py-2 rounded-md hover:scale-105 transition-transform flex items-center gap-2 shadow-md text-lg"
                     >
-                        Sair do Painel <LogOut size={20} strokeWidth={3} />
+                        {perfilLogado === 'coordenador' 
+                            ? <>Voltar ao início <ArrowLeft size={20} strokeWidth={3} /></>
+                            : <>Sair do Painel <LogOut size={20} strokeWidth={3} /></>}
                     </Link>
                 </div>
             </div>
@@ -341,6 +355,7 @@ export default function PainelADM() {
 
                         <div className="relative z-10 p-5 sm:p-6">
                             <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
+                            {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
 
                             <div className="grid gap-3">
                                 <div className="grid gap-3 sm:grid-cols-2">
@@ -410,26 +425,46 @@ export default function PainelADM() {
             {cadastroDocenteAberto && (
                 <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
                     <div className="w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] p-5 sm:p-6">
-                        <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Docente</h2>
+                        <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
+                        {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
                         <form onSubmit={cadastrarDocente} className="grid gap-3">
-                            {[
-                                ['nome', 'Nome completo', 'text'],
-                                ['matricula', 'Código de docente', 'text'],
-                                ['email', 'E-mail', 'email'],
-                                ['senha', 'Senha', 'password'],
-                            ].map(([id, label, type]) => (
-                                <label key={id} htmlFor={`docente-${id}`} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
-                                    {label}
-                                    <input
-                                        id={`docente-${id}`}
-                                        type={type}
-                                        value={cadastroDocente[id]}
-                                        onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
-                                        required
-                                        className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {[
+                                    ['nome', 'Nome completo', 'text'],
+                                    ['matricula', 'Código do servidor', 'text'],
+                                    ['email', 'E-mail', 'email'],
+                                    ['senha', 'Senha', 'password'],
+                                ].map(([id, label, type]) => (
+                                    <label key={id} htmlFor={`docente-${id}`} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+                                        {label}
+                                        <input
+                                            id={`docente-${id}`}
+                                            type={type}
+                                            value={cadastroDocente[id]}
+                                            onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
+                                            required
+                                            className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                                        />
+                                    </label>
+                                ))}
+                            </div>
+                            
+                            <div className="sm:w-1/2">
+                                <label htmlFor="id_perfil_cadastro" className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+                                    Perfil
+                                    <SelectField
+                                        label=""
+                                        id="id_perfil_cadastro"
+                                        name="id_perfil_cadastro"
+                                        options={opcoesPerfilCadastro}
+                                        required={true}
+                                        value={cadastroDocente.id_perfil}
+                                        placeholderLabel="Selecione o perfil"
+                                        onChange={(event) => setCadastroDocente((atual) => ({ ...atual, id_perfil: event.target.value }))}
                                     />
                                 </label>
-                            ))}
+                            </div>
+
                             <div className="flex gap-4 mt-4 justify-center">
                                 <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
                                     Voltar

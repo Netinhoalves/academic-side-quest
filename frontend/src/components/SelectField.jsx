@@ -65,7 +65,7 @@ export function SelectField({label, name, id, options, required, className = '',
             </button>
 
             {aberto && (
-                <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-[10px] bg-[#ffd08b] shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
+                <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[200px] overflow-y-auto rounded-[10px] bg-[#ffd08b] shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
                     {placeholderLabel && (
                         <button
                             type="button"
