@@ -14,6 +14,9 @@ import EditarCategoria from './pages/EditarCategoria';
 import Subcategorias from './pages/Subcategorias';
 import AdicionarSubcategoria from './pages/AdicionarSubcategoria';
 import EditarSubcategoria from './pages/EditarSubcategoria';
+import Cursos from './pages/Cursos';
+import AdicionarCurso from './pages/AdicionarCurso';
+import EditarCurso from './pages/EditarCurso';
 
 function App() {
   return(
@@ -38,6 +41,9 @@ function App() {
         <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias" element={<Subcategorias />} />
         <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias/adicionar" element={<AdicionarSubcategoria />} />
         <Route path="/projeto/:projetoId/categoria/:categoriaId/subcategorias/:subcategoriaId/editar" element={<EditarSubcategoria />} />
+        <Route path="/gerenciar-cursos" element={<Cursos />} />
+        <Route path="/adicionar-curso" element={<AdicionarCurso />} />
+        <Route path="/editar-curso/:id" element={<EditarCurso />} />
       </Routes>
     </BrowserRouter>
   )

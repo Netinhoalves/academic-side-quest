@@ -61,15 +61,19 @@ export default function ListaEntidades({
     );
 }
 
-function EntityActions({ item, inativo, onEditar, renderAcoes, aberta, onAlternar, onFechar }) {
+function EntityActions({ item, inativo, onEditar, podeEditar, renderAcoes, aberta, onAlternar, onFechar }) {
     return (
         <div className="relative shrink-0">
             <button type="button" onClick={onAlternar} className={`flex cursor-pointer items-center gap-3 rounded-md px-5 py-2 text-lg text-white transition-colors ${inativo ? 'bg-gray-500 hover:bg-gray-600' : 'bg-color-blue hover:bg-color-blue-light'}`}>
                 Ações <ChevronDown size={20} className={`transition-transform duration-200 ${aberta ? 'rotate-180' : ''}`} />
             </button>
             <div onClick={onFechar} className={`absolute right-0 top-full z-20 mt-1 min-w-[220px] origin-top-right rounded-md bg-color-creme py-2 text-lg text-color-blue shadow-lg transition-all duration-200 ${aberta ? 'pointer-events-auto translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-2 scale-95 opacity-0'}`}>
-                    {renderAcoes?.(item)}
-                    <button type="button" onClick={() => { onFechar(); onEditar(item.id); }} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Editar</button>
+                {renderAcoes?.(item)}
+                {podeEditar && (
+                <button type="button" onClick={() => { onFechar(); onEditar(item.id); }} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">
+                    Editar
+                </button>
+            )}
             </div>
         </div>
     );
