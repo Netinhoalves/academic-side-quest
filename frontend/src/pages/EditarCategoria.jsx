@@ -32,5 +32,5 @@ export default function EditarCategoria() {
         }
     }
 
-    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">{erro ? <p className="rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p> : categoria && <CategoriaForm titulo="Editar Categoria" categoria={categoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categorias`)} modoEdicao carregando={carregando} />}</div></LayoutCoordenador>;
+    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]">{erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}{categoria && <CategoriaForm titulo="Editar Categoria" categoria={categoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categorias`)} modoEdicao carregando={carregando} />}</div></div></LayoutCoordenador>;
 }

@@ -27,8 +27,10 @@ export default function EditarSubcategoria() {
             const categorias = projeto.categorias.map((item) => item.id === categoria.id
                 ? { ...item, subcategorias: item.subcategorias.map((subitem) => subitem.id === subcategoria.id ? dados : subitem) }
                 : item);
-            await updatePpc(projetoId, { ...projeto, categorias }, localStorage.getItem('asq_token'));
-            navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias`);
+            const atualizado = await updatePpc(projetoId, { ...projeto, categorias }, localStorage.getItem('asq_token'));
+            // o PUT recria a árvore do PPC com ids novos: a categoria continua na mesma posição
+            const indice = projeto.categorias.findIndex((item) => item.id === categoria.id);
+            navigate(`/projeto/${projetoId}/categoria/${atualizado.categorias[indice].id}/subcategorias`);
         } catch (error) {
             setErro(error.message || 'Não foi possível editar a subcategoria');
         } finally {
@@ -36,5 +38,5 @@ export default function EditarSubcategoria() {
         }
     }
 
-    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">{erro ? <p className="rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p> : subcategoria && <SubcategoriaForm titulo="Editar Subcategoria" subcategoria={subcategoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias`)} carregando={carregando} />}</div></LayoutCoordenador>;
+    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]">{erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}{subcategoria && <SubcategoriaForm titulo="Editar Subcategoria" subcategoria={subcategoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias`)} carregando={carregando} />}</div></div></LayoutCoordenador>;
 }

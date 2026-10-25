@@ -19,9 +19,12 @@ export default function Categorias() {
     return (
         <LayoutCoordenador>
             {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
+            {projeto?.em_uso && <p className="mb-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Este PPC está em uso por alunos: as categorias não podem ser alteradas.</p>}
             {projeto && <ListaEntidades
                 titulo="Categorias"
                 itens={projeto.categorias || []}
+                mostrarAdicionar={!projeto.em_uso}
+                podeEditar={() => !projeto.em_uso}
                 onAdicionar={() => navigate(`/projeto/${projetoId}/categorias/adicionar`)}
                 onEditar={(id) => navigate(`/projeto/${projetoId}/categorias/${id}/editar`)}
                 renderTitulo={(categoria) => categoria.nome}

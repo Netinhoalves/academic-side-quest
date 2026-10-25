@@ -17,10 +17,13 @@ export default function Subcategorias() {
 
     return <LayoutCoordenador>
         {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
+        {projeto?.em_uso && <p className="mb-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Este PPC está em uso por alunos: as subcategorias não podem ser alteradas.</p>}
         {categoria && <ListaEntidades
             titulo={`Subcategorias - ${categoria.nome}`}
             textoAdicionar="Subcategoria"
             itens={categoria.subcategorias || []}
+            mostrarAdicionar={!projeto.em_uso}
+            podeEditar={() => !projeto.em_uso}
             onAdicionar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/adicionar`)}
             onEditar={(id) => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/${id}/editar`)}
             renderTitulo={(subcategoria) => <><span className="mr-3">{subcategoria.codigo}</span>{subcategoria.nome}</>}
