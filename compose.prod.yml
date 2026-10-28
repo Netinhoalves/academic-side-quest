@@ -1,0 +1,31 @@
+# Produção (hospedagem), sempre junto com o compose.yml:
+# docker compose -f compose.yml -f compose.prod.yml up -d --build
+services:
+  mysql:
+    ports: !reset []
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=64M"]
+
+  api:
+    ports: !reset []
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--root-path", "/api", "--forwarded-allow-ips", "*"]
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    container_name: academic-side-quest-web
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  caddy_data:
+  caddy_config:

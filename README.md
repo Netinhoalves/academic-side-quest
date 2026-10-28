@@ -118,6 +118,30 @@ pytest -v
 
 A cada execução, os testes criam do zero um banco separado, o `academic_test`, e não mexem no banco `academic` do dia a dia. Eles entram no MySQL com o usuário `root`, usando o `MYSQL_ROOT_PASSWORD` do `.env` da raiz.
 
+## Hospedagem
+
+Em produção, o site e a API ficam no mesmo endereço. O Caddy serve o site, repassa o caminho `/api` para a API e gera o certificado HTTPS sozinho. A documentação da API fica em `/api/docs`, e o MySQL e a API não ficam expostos na internet.
+
+No servidor (Linux com Docker), na pasta do repositório:
+
+1. Crie o `.env` a partir do `.env.example`, com senhas novas para o MySQL, uma `SECRET_KEY` nova e o endereço do site em `SITE_ADDRESS`. A chave sai com `python3 -c "import secrets; print(secrets.token_hex(32))"`.
+2. Suba o MySQL, a API e o site:
+
+   ```bash
+   docker compose -f compose.yml -f compose.prod.yml up -d --build
+   ```
+
+3. Depois de cada atualização do repositório:
+
+   ```bash
+   git pull
+   docker compose -f compose.yml -f compose.prod.yml up -d --build
+   ```
+
+Sem `SITE_ADDRESS`, o Caddy responde só em HTTP, na porta 80.
+
+As senhas das contas de teste estão neste README, que é público. No servidor, troque a senha do administrador e a do coordenador logo depois de subir, pelo `PUT /usuarios/{id}` da documentação da API.
+
 ## Usuários de teste
 
 | Perfil | E-mail | Senha |
