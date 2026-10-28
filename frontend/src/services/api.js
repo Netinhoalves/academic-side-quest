@@ -1,0 +1,137 @@
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+
+async function request(path, { method = 'GET', body, token } = {}) {
+    const headers = {};
+
+    if (body !== undefined) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+
+    const contentType = response.headers.get('content-type') || '';
+    const isJson = contentType.includes('application/json');
+    const raw = isJson ? await response.text() : null;
+    const data = raw ? JSON.parse(raw) : null;
+
+    if (!response.ok) {
+        const detalhe = Array.isArray(data?.detail)
+            ? data.detail.map((item) => item.msg).join('; ')
+            : data?.detail;
+        throw new Error(detalhe || data?.message || 'Falha ao comunicar com a API');
+    }
+
+    return data;
+}
+
+export function login(payload) {
+    return request('/login', {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export function getProfiles() {
+    return request('/profiles');
+}
+
+export function getUsers(token) {
+    return request('/usuarios', { token });
+}
+
+export function createUser(payload, token) {
+    return request('/usuarios', {
+        method: 'POST',
+        body: payload,
+        token,
+    });
+}
+
+export function updateUser(userId, payload, token) {
+    return request(`/usuarios/${userId}`, {
+        method: 'PUT',
+        body: payload,
+        token,
+    });
+}
+
+export function deleteUser(userId, token) {
+    return request(`/usuarios/${userId}`, {
+        method: 'DELETE',
+        token,
+    });
+}
+
+export function getCursos() {
+    return request('/cursos');
+}
+
+export function createCurso(payload, token) {
+    return request('/cursos', {
+        method: 'POST',
+        body: payload,
+        token,
+    });
+}
+
+export function updateCurso(id, payload, token) {
+    return request(`/cursos/${id}`, {
+        method: 'PUT',
+        body: payload,
+        token,
+    });
+}
+
+export function deleteCurso(id, token) {
+    return request(`/cursos/${id}`, {
+        method: 'DELETE',
+        token,
+    });
+}
+
+export function getPpcsPorCurso(idCurso) {
+    return request(`/cursos/${idCurso}/ppcs`);
+}
+
+export function cadastrarAluno(payload) {
+    return request('/auth/cadastro-aluno', {
+        method: 'POST',
+        body: payload
+    });
+}
+
+export const getMe = async (token) => {
+    return await request('/me', { token });
+};
+
+export function getPpcs(token) {
+    return request('/ppcs', { token });
+}
+
+export function getPpc(id, token) {
+    return request(`/ppcs/${id}`, { token });
+}
+
+export function createPpc(payload, token) {
+    return request('/ppcs', { method: 'POST', body: payload, token });
+}
+
+export function updatePpc(id, payload, token) {
+    return request(`/ppcs/${id}`, { method: 'PUT', body: payload, token });
+}
+
+export function alterarAtivoPpc(id, ativo, token) {
+    return request(`/ppcs/${id}/ativo`, {
+        method: 'PATCH',
+        body: { ativo },
+        token,
+    });
+}
