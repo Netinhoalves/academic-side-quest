@@ -2,6 +2,8 @@
 
 Sistema web para alunos enviarem horas complementares e professores validarem. Projeto da disciplina Atividades de Extensão IV, do curso de Tecnologia em Análise e Desenvolvimento de Sistemas (TADS) do IFMS – Campus Três Lagoas.
 
+O sistema está no ar em <https://academicsidequest.chilecentral.cloudapp.azure.com>, com a documentação da API em <https://academicsidequest.chilecentral.cloudapp.azure.com/api/docs>.
+
 ## Como rodar
 
 Passo a passo para quem acabou de clonar o repositório. O caminho recomendado inicia **MySQL e API** com Docker Compose; o frontend é iniciado separadamente. Os comandos funcionam no CMD e no PowerShell do Windows; quando são diferentes, aparecem os dois.
@@ -120,27 +122,28 @@ A cada execução, os testes criam do zero um banco separado, o `academic_test`,
 
 ## Hospedagem
 
-Em produção, o site e a API ficam no mesmo endereço. O Caddy serve o site, repassa o caminho `/api` para a API e gera o certificado HTTPS sozinho. A documentação da API fica em `/api/docs`, e o MySQL e a API não ficam expostos na internet.
+O sistema está hospedado de graça no Azure for Students, numa máquina virtual Ubuntu 24.04 (tamanho B2ats v2, com 1 GB de memória e 2 GB de swap, na região Chile Central) que roda o mesmo Docker Compose do projeto. Em produção, o site e a API ficam no mesmo endereço. O Caddy serve o site, repassa o caminho `/api` para a API e gera o certificado HTTPS sozinho. A documentação da API fica em `/api/docs`, e o MySQL e a API não ficam expostos na internet.
 
-No servidor (Linux com Docker), na pasta do repositório:
+No servidor (Linux com Docker), na pasta do repositório e na branch `main`:
 
 1. Crie o `.env` a partir do `.env.example`, com senhas novas para o MySQL, uma `SECRET_KEY` nova e o endereço do site em `SITE_ADDRESS`. A chave sai com `python3 -c "import secrets; print(secrets.token_hex(32))"`.
-2. Suba o MySQL, a API e o site:
+2. Acrescente no `.env` a linha `COMPOSE_FILE=compose.yml:compose.prod.yml`. Com ela, todo `docker compose` nessa pasta usa a configuração de produção. Essa linha é só do servidor: não coloque no `.env` do computador de vocês, que precisa das portas 3307 e 8000 abertas.
+3. Suba o MySQL, a API e o site:
 
    ```bash
-   docker compose -f compose.yml -f compose.prod.yml up -d --build
+   docker compose up -d --build
    ```
 
-3. Depois de cada atualização do repositório:
+4. Depois de cada merge na `main`:
 
    ```bash
    git pull
-   docker compose -f compose.yml -f compose.prod.yml up -d --build
+   docker compose up -d --build
    ```
 
-Sem `SITE_ADDRESS`, o Caddy responde só em HTTP, na porta 80.
+Sem `SITE_ADDRESS`, o Caddy responde só em HTTP, na porta 80. No servidor, nunca rode `docker compose down -v`: o `-v` apaga o banco.
 
-As senhas das contas de teste estão neste README, que é público. No servidor, troque a senha do administrador e a do coordenador logo depois de subir, pelo `PUT /usuarios/{id}` da documentação da API.
+As senhas das contas de teste estão neste README, que é público. Para uso real, troque a senha do administrador e a do coordenador no servidor, pelo `PUT /usuarios/{id}` da documentação da API.
 
 ## Usuários de teste
 
@@ -312,6 +315,7 @@ O aluno envia os certificados das atividades complementares, o professor ou o co
 | Backend | Python, FastAPI, SQLAlchemy 2, PyMySQL, PyJWT, bcrypt, python-dotenv, Uvicorn, pytest |
 | Banco de dados | MySQL 8.0, Docker Compose |
 | Frontend | React 19, Vite, Tailwind CSS 3 |
+| Hospedagem | Azure for Students (máquina virtual Ubuntu), Docker Compose, Caddy (HTTPS) |
 
 ## Estrutura do repositório
 
@@ -331,8 +335,13 @@ academic-side-quest/
 ├── frontend/                # React + Vite + Tailwind
 │   ├── public/
 │   └── src/
-├── .env.example             # variáveis do MySQL e da API (usadas pelo compose.yml)
+├── deploy/
+│   ├── Caddyfile            # Caddy: serve o site, repassa /api para a API e gera o HTTPS
+│   └── web.Dockerfile       # imagem do site (build do React servido pelo Caddy)
+├── .dockerignore            # o que fica de fora do build do site
+├── .env.example             # variáveis do MySQL, da API e da hospedagem
 ├── compose.yml              # MySQL 8.0 + API via Docker Compose
+├── compose.prod.yml         # complemento do compose.yml para a hospedagem
 ├── LICENSE
 └── README.md
 ```
@@ -353,7 +362,7 @@ Professora: Maraísa Guerra, disciplina Atividades de Extensão IV.
 
 | Branch | Uso |
 |---|---|
-| `main` | Só recebe merge na véspera de cada entrega. |
+| `main` | Versão das entregas, a mesma que roda no servidor. Só recebe merge quando uma entrega fica pronta. |
 | `dev-backend` | Integração do backend. |
 | `dev-frontend` | Integração do frontend. |
 | `feature/TASK-xx-descricao` | Uma branch por tarefa, criada a partir da `dev-backend` ou da `dev-frontend`. |
