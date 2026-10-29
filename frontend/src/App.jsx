@@ -17,6 +17,7 @@ import EditarSubcategoria from './pages/EditarSubcategoria';
 import Cursos from './pages/Cursos';
 import AdicionarCurso from './pages/AdicionarCurso';
 import EditarCurso from './pages/EditarCurso';
+import EmBreve from './pages/EmBreve';
 
 function App() {
   return(
@@ -29,6 +30,9 @@ function App() {
         <Route path="/painel-adm" element={<PainelADM />} />
         <Route path="/aluno" element={<DashboardAluno />} />
         <Route path="/coordenador" element={<DashboardCoordenador />} />
+        <Route path="/comprovar-horas" element={<EmBreve titulo="Comprovar horas" perfisPermitidos={['Aluno']} />} />
+        <Route path="/visualizar-resultados" element={<EmBreve titulo="Visualizar resultados" perfisPermitidos={['Aluno']} />} />
+        <Route path="/visualizar-alunos" element={<EmBreve titulo="Visualizar alunos" perfisPermitidos={['Coordenador', 'Professor']} />} />
         <Route path="/gerenciar-projetos" element={<Projetos />} />
         <Route path="/adicionar-projeto" element={<AdicionarProjeto />} />
         <Route path="/adicionar-projeto/categoria" element={<AdicionarCategoria />} />
