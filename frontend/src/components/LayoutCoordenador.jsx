@@ -52,7 +52,7 @@ export default function LayoutCoordenador({ children }) {
 
             <div className="relative z-10 flex min-h-[calc(100vh-60px)]">
                 <MenuCoordenador recolhido={menuRecolhido} onAlternar={alternarMenu} />
-                <main className="relative flex-1 px-5 py-12 md:px-12 lg:px-16">
+                <main className="relative min-w-0 flex-1 px-5 py-12 md:px-12 lg:px-16">
                     {children}
                 </main>
             </div>

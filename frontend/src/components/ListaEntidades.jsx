@@ -19,8 +19,8 @@ export default function ListaEntidades({
 
     return (
         <section className="mx-auto w-full max-w-[1250px]">
-            <div className="mb-2 flex items-center justify-between gap-4">
-                <h1 className="text-4xl md:text-5xl">{titulo}</h1>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
+                <h1 className="min-w-0 break-words text-4xl md:text-5xl">{titulo}</h1>
                 {mostrarAdicionar && <button type="button" onClick={onAdicionar} className="flex shrink-0 items-center gap-2 rounded-md bg-color-blue px-5 py-3 text-lg text-white shadow-sm hover:bg-color-blue-light">
                     <Plus size={21} /> Adicionar {textoAdicionar || titulo.slice(0, -1)}
                 </button>}
@@ -34,25 +34,30 @@ export default function ListaEntidades({
                         : index % 2 === 0 ? 'bg-color-yellow' : 'bg-[#FFD394]';
 
                     return (
-                        <div key={item.id} className={`relative flex items-center gap-4 px-5 py-3 ${estiloLinha} ${index === 0 ? 'rounded-t-lg' : ''} ${index === itens.length - 1 ? 'rounded-b-lg' : ''}`}>
-                            <span className={`h-4 w-4 shrink-0 rounded-full ${inativo ? 'bg-gray-500' : 'bg-color-blue'}`} />
-                            <span className="min-w-0 flex-1">
-                                <strong className="block truncate text-2xl">{renderTitulo(item)}</strong>
-                                <small className="block truncate text-base">{renderDescricao(item)}</small>
-                            </span>
+                        <div key={item.id} className={`relative flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3 ${estiloLinha} ${index === 0 ? 'rounded-t-lg' : ''} ${index === itens.length - 1 ? 'rounded-b-lg' : ''}`}>
+                            {/* em tela estreita, os pontos e o botão Ações passam para a linha de baixo */}
+                            <div className="flex min-w-0 grow basis-72 items-center gap-4">
+                                <span className={`h-4 w-4 shrink-0 rounded-full ${inativo ? 'bg-gray-500' : 'bg-color-blue'}`} />
+                                <span className="min-w-0 flex-1">
+                                    <strong className="line-clamp-2 text-2xl md:line-clamp-1">{renderTitulo(item)}</strong>
+                                    <small className="line-clamp-2 text-base md:line-clamp-1">{renderDescricao(item)}</small>
+                                </span>
+                            </div>
 
-                            {renderExtra?.(item)}
+                            <div className="ml-auto flex shrink-0 items-center gap-4">
+                                {renderExtra?.(item)}
 
-                            <EntityActions
-                                item={item}
-                                inativo={inativo}
-                                onEditar={onEditar}
-                                podeEditar={podeEditar?.(item) ?? true}
-                                renderAcoes={renderAcoes}
-                                aberta={acaoAberta === item.id}
-                                onAlternar={() => setAcaoAberta((atual) => atual === item.id ? null : item.id)}
-                                onFechar={() => setAcaoAberta(null)}
-                            />
+                                <EntityActions
+                                    item={item}
+                                    inativo={inativo}
+                                    onEditar={onEditar}
+                                    podeEditar={podeEditar?.(item) ?? true}
+                                    renderAcoes={renderAcoes}
+                                    aberta={acaoAberta === item.id}
+                                    onAlternar={() => setAcaoAberta((atual) => atual === item.id ? null : item.id)}
+                                    onFechar={() => setAcaoAberta(null)}
+                                />
+                            </div>
                         </div>
                     );
                 })}
