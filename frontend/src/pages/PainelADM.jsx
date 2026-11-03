@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Pencil, LogOut, ArrowLeft } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
+import Modal from '../components/Modal';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
 import { lerUsuario, limparSessao } from '../services/sessao';
 import LayoutPadrao from '../components/LayoutPadrao'; 
@@ -106,6 +107,12 @@ export default function PainelADM() {
             .filter((p) => ['coordenador', 'professor'].includes(p.nome_perfil.toLowerCase()))
             .map((p) => ({ value: String(p.id), label: p.nome_perfil }));
     }, [perfis, perfilLogado]);
+
+    const opcoesPerfilEdicao = useMemo(() => {
+        return perfis
+            .filter((perfil) => ['coordenador', 'professor'].includes(perfil.nome_perfil.toLowerCase()))
+            .map((perfil) => ({ value: String(perfil.id), label: perfil.nome_perfil }));
+    }, [perfis]);
 
     const resultadoFiltrado = useMemo(() => {
         const termo = pesquisa.trim().toLowerCase();
@@ -348,13 +355,12 @@ export default function PainelADM() {
             </div>
 
             {modalAberto && formulario && (
-                <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                    <div className="relative w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] overflow-hidden">
+                <Modal onClose={fecharModal} titleId="editar-cadastro-titulo">
                         <div className="absolute top-0 left-0 w-24 h-24 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.45),_transparent_65%)]" />
                         <div className="absolute bottom-0 right-0 w-24 h-24 bg-[radial-gradient(circle_at_bottom_right,_rgba(17,33,64,0.12),_transparent_65%)]" />
 
                         <div className="relative z-10 p-5 sm:p-6">
-                            <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
+                            <h2 id="editar-cadastro-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
                             {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
 
                             <div className="grid gap-3">
@@ -382,7 +388,7 @@ export default function PainelADM() {
                                             label=""
                                             id="id_perfil"
                                             name="id_perfil"
-                                            options={perfis.map((perfil) => ({ value: String(perfil.id), label: perfil.nome_perfil }))}
+                                            options={opcoesPerfilEdicao}
                                             required={false}
                                             value={formulario.id_perfil}
                                             placeholderLabel="Selecione o perfil"
@@ -412,20 +418,21 @@ export default function PainelADM() {
                                     <button type="button" onClick={confirmarEdicao} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
                                         {salvando ? 'Salvando...' : 'Confirmar'}
                                     </button>
-                                    <button type="button" onClick={desativarRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] py-2 text-lg" disabled={salvando}>
-                                        {salvando ? 'Desativando...' : 'Desativar'}
-                                    </button>
+                                    {String(formulario.id) !== String(usuarioLogado?.id) && (
+                                        <button type="button" onClick={desativarRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] py-2 text-lg" disabled={salvando}>
+                                            {salvando ? 'Desativando...' : 'Desativar'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
 
             {cadastroDocenteAberto && (
-                <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
-                    <div className="w-full max-w-[560px] bg-color-yellow rounded-[15px] shadow-[0_18px_30px_rgba(0,0,0,0.3)] p-5 sm:p-6">
-                        <h2 className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
+                <Modal onClose={fecharCadastroDocente} titleId="cadastro-servidor-titulo">
+                        <div className="p-5 sm:p-6">
+                        <h2 id="cadastro-servidor-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
                         {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
                         <form onSubmit={cadastrarDocente} className="grid gap-3">
                             <div className="grid gap-3 sm:grid-cols-2">
@@ -474,8 +481,8 @@ export default function PainelADM() {
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
+                        </div>
+                </Modal>
             )}
         </LayoutPadrao>
     );
