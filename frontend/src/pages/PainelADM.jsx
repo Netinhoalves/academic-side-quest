@@ -394,7 +394,7 @@ export default function PainelADM() {
                                                 options={opcoesPerfilEdicao}
                                                 required={false}
                                                 value={formulario.id_perfil}
-                                                placeholderLabel="Selecione o perfil"
+                                                placeholderLabel=""
                                                 onChange={(event) => setFormulario((atual) => ({ ...atual, id_perfil: event.target.value }))}
                                             />
                                         ) : (
