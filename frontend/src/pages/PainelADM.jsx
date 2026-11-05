@@ -114,6 +114,8 @@ export default function PainelADM() {
             .map((perfil) => ({ value: String(perfil.id), label: perfil.nome_perfil }));
     }, [perfis]);
 
+    const perfilEditavel = opcoesPerfilEdicao.some((opcao) => opcao.value === formulario?.id_perfil);
+
     const resultadoFiltrado = useMemo(() => {
         const termo = pesquisa.trim().toLowerCase();
 
@@ -384,16 +386,22 @@ export default function PainelADM() {
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col w-full">
                                         <label htmlFor="id_perfil" className="text-color-blue font-bold text-base sm:text-lg mb-1">Perfil</label>
-                                        <SelectField
-                                            label=""
-                                            id="id_perfil"
-                                            name="id_perfil"
-                                            options={opcoesPerfilEdicao}
-                                            required={false}
-                                            value={formulario.id_perfil}
-                                            placeholderLabel="Selecione o perfil"
-                                            onChange={(event) => setFormulario((atual) => ({ ...atual, id_perfil: event.target.value }))}
-                                        />
+                                        {perfilEditavel ? (
+                                            <SelectField
+                                                label=""
+                                                id="id_perfil"
+                                                name="id_perfil"
+                                                options={opcoesPerfilEdicao}
+                                                required={false}
+                                                value={formulario.id_perfil}
+                                                placeholderLabel="Selecione o perfil"
+                                                onChange={(event) => setFormulario((atual) => ({ ...atual, id_perfil: event.target.value }))}
+                                            />
+                                        ) : (
+                                            <span className="w-full rounded-[10px] bg-[#ffd08b] px-3 py-2 sm:py-3 text-[#172B68] font-jaro shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]">
+                                                {perfisPorId.get(String(formulario.id_perfil)) || 'Sem perfil'}
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="flex flex-col w-full">
