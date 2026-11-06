@@ -52,7 +52,7 @@ export function SelectField({label, name, id, options, required, className = '',
                 aria-expanded={aberto}
                 onClick={() => setAberto((atual) => !atual)}
                 className={`w-full relative text-left appearance-none bg-[#ffd08b] rounded-[10px] px-3 py-2 sm:py-3 pr-10
-                           text-gray-900 font-jaro outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)] ${className}`}
+                           text-[#172B68] font-jaro outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)] ${className}`}
                 {...props}
             >
                 <span className="text-[#172B68]">
