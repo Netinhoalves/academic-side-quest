@@ -42,41 +42,41 @@ Os limites semestrais são independentes. O saldo de um semestre não vai para o
 - Solicitações pendentes não são consideradas no cálculo e não consomem pontos.
 - A ordem de distribuição dos pontos considera a data da atividade, da mais antiga para a mais recente, independe da ordem em que foram avaliadas.
 - **Solicitações com a mesma data de atividade:** devem ser processadas pela ordem de chegada ao sistema. A solicitação recebida primeiro tem prioridade na distribuição dos pontos.
-- **Quantidade inválida:** solicitações com quantidade zero, negativa ou ausente não devem ter seus pontos calculados.
+- **Quantidade inválida:** para regras `MULTIPLICACAO`, a quantidade é obrigatória e deve ser maior que zero. Caso esteja ausente, seja zero ou negativa, a API deve recusar o envio da solicitação. Para `SOMA`, a quantidade não é utilizada e se mantém vazia, usando o valor fixo definido na regra.
 - **Precisão dos pontos:** não é necessário aplicar arredondamento, pois os valores decimais previstos nas regras são múltiplos de 7,5.
 
 ## 3. Limites do PPC TADS 2019
 
-| Categoria | Limite por semestre | Limite total |
-|-------------|---:|----:|
-| Categoria 1 | 80 | 120 |
-| Categoria 2 | 60 | 100 |
-| Categoria 3 | 60 | 100 |
-| Categoria 4 | 80 | 100 |
-| **Total do PPC** | — | **275** |
+| Categorias  | Limite por semestre | Limite total |
+|-------------|--------------------:|-------------:|
+| Categoria 1 |                  80 |          120 |
+| Categoria 2 |                  60 |          100 |
+| Categoria 3 |                  60 |          100 |
+| Categoria 4 |                  80 |          100 |
+| **Total do PPC** | -------------- |      **275** |
 
 ## 4. Limites das subcategorias
 
 | Subcategoria | Limite por semestre |
-|---|---:|
-| 1.1 | 30 |
-| 1.2 | 30 |
-| 1.3 | 40 |
-| 1.4 | 40 |
-| 2.1 | 60 |
-| 2.2 | 30 |
-| 2.3 | 20 |
-| 3.1 | 30 |
-| 3.2 | 20 |
-| 3.3 | 18 |
-| 3.4 | 40 |
-| 3.5 | 20 |
-| 3.6 | 45 |
-| 4.1 | 45 |
-| 4.2 | 45 |
-| 4.3 | 50 |
-| 4.4 | 50 |
-| 4.5 | 10 |
+|--------------|--------------------:|
+|          1.1 |                  30 |
+|          1.2 |                  30 |
+|          1.3 |                  40 |
+|          1.4 |                  40 |
+|          2.1 |                  60 |
+|          2.2 |                  30 |
+|          2.3 |                  20 |
+|          3.1 |                  30 |
+|          3.2 |                  20 |
+|          3.3 |                  18 |
+|          3.4 |                  40 |
+|          3.5 |                  20 |
+|          3.6 |                  45 |
+|          4.1 |                  45 |
+|          4.2 |                  45 |
+|          4.3 |                  50 |
+|          4.4 |                  50 |
+|          4.5 |                  10 |
 
 ## 5. Cenários de teste
 
@@ -483,7 +483,7 @@ A solicitação B foi aprovada primeiro e poderia receber 20 pontos. Mas quando 
 
 A solicitação A tem prioridade e recebe 30 pontos. A solicitação B fica com os 10 pontos restantes do limite da subcategoria.
 
-**Notificação ao usuário:**
+**Notificação ao usuário (opcional, se sobrar tempo):**
 
 Sempre que ocorrer um recálculo que altere os pontos aproveitados de uma solicitação, o sistema deverá apresentar uma mensagem explicando o motivo da alteração.
 
@@ -721,16 +721,16 @@ Todas as solicitações estão aprovadas.
 
 **Solicitações — primeiro semestre de 2026:**
 
-| Solicitação | Subcategoria | Regra | Quantidade | Calculados | Aproveitados |
-|---|-----|----------------------------------------|-----------:|----:|----:|
-| A | 3.1 | Regra 10 — 10 pontos por evento sem CH | 1 evento   |  10 |  10 |
-| B | 3.2 | Regra 11 — 5 pontos por participação   | 1 presença |   5 |   5 |
-| C | 3.3 | Regra 12 — 3 pontos por participação   | 1 presença |   3 |   3 |
-| D | 3.4 | Regra 14 — 10 pontos por evento sem CH | 1 evento   |  10 |  10 |
-| E | 3.5 | Regra 16 — 8 pontos por evento sem CH  | 1 evento   |   8 |   8 |
-| F | 3.5 | Regra 15 — 1 ponto por hora            | 4 horas    |   4 |   4 |
-| G | 3.6 | Regra 17 — 7,5 pontos por mês          | 1 mês      | 7,5 | 7,5 |
-| H | 3.1 | Regra  9 — 1 ponto por hora            | 5 horas    |   5 |   5 |
+| Solicitação | Data da atividade | Subcategoria | Regra | Quantidade | Calculados | Aproveitados |
+|---|------------|-----|----------------------------------------|-----------:|----:|----:|
+| A | 10/03/2026 | 3.1 | Regra 10 — 10 pontos por evento sem CH | 1 evento   |  10 |  10 |
+| B | 11/03/2026 | 3.2 | Regra 11 — 5 pontos por participação   | 1 presença |   5 |   5 |
+| C | 12/03/2026 | 3.3 | Regra 12 — 3 pontos por participação   | 1 presença |   3 |   3 |
+| D | 13/03/2026 | 3.4 | Regra 14 — 10 pontos por evento sem CH | 1 evento   |  10 |  10 |
+| E | 14/03/2026 | 3.5 | Regra 16 — 8 pontos por evento sem CH  | 1 evento   |   8 |   8 |
+| F | 15/03/2026 | 3.5 | Regra 15 — 1 ponto por hora            | 4 horas    |   4 |   4 |
+| G | 16/03/2026 | 3.6 | Regra 17 — 7,5 pontos por mês          | 1 mês      | 7,5 | 7,5 |
+| H | 17/03/2026 | 3.1 | Regra  9 — 1 ponto por hora            | 5 horas    |   5 |   5 |
 
 Todas as solicitações são aprovadas e processadas em ordem cronológica, conforme suas datas de atividade.
 
@@ -746,7 +746,7 @@ Todas as solicitações são aprovadas e processadas em ordem cronológica, conf
 
 | Subcategoria | Utilizados | Limite | Saldo |
 |--------------|-----------:|-------:|------:|
-| 3.1          |         10 |     30 |    20 |
+| 3.1          |         15 |     30 |    15 |
 | 3.2          |          5 |     20 |    15 |
 | 3.3          |          3 |     18 |    15 |
 | 3.4          |         10 |     40 |    30 |
@@ -831,11 +831,11 @@ Todas as solicitações são aprovadas e processadas em ordem, seguindo suas dat
 
 | Solicitação | Data da atividade | Subcategoria | Regra | Quantidade | Pontos calculados | Pontos Aproveitados |
 |---|------------|-----|-------------------------------|--------:|---:|---:|
-| A | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | 1 atvs. |  5 |  5 |
-| B | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | 1 atvs. |  5 |  5 |
-| C | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | 1 atvs. |  5 |  5 |
-| D | 10/03/2026 | 1.4 | Regra 4 — 10 por participação | 1 part. | 10 | 10 |
-| E | 10/03/2026 | 1.4 | Regra 4 — 10 por participação | 1 part. | 10 | 10 |
+| A | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | — |  5 |  5 |
+| B | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | — |  5 |  5 |
+| C | 10/03/2026 | 1.1 | Regra 1 — 5 por atividade     | — |  5 |  5 |
+| D | 10/03/2026 | 1.4 | Regra 4 — 10 por participação | — | 10 | 10 |
+| E | 10/03/2026 | 1.4 | Regra 4 — 10 por participação | — | 10 | 10 |
 
 As cinco solicitações são aprovadas. Todas pertencem ao primeiro semestre de 2026.
 
