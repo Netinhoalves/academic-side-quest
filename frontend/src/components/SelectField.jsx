@@ -50,7 +50,7 @@ export function SelectField({label, name, id, options, required, className = '',
                     {opcaoAtual?.label || placeholderLabel}
                 </span>
 
-                <span className="pointer-events-none absolute inset-y-0 right-s3 flex items-center text-color-blue">
+                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-color-blue">
                     <Funnel aria-hidden="true" className="h-4 w-4" />
                 </span>
             </button>
