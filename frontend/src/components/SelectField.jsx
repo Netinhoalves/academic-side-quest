@@ -1,5 +1,6 @@
 import { Funnel } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import useFecharAoClicarFora from '../hooks/useFecharAoClicarFora';
 
 export function SelectField({label, name, id, options, required, className = '', value, onChange, placeholderLabel = 'Selecione...', ...props}) {
     const rootRef = useRef(null);
@@ -10,17 +11,7 @@ export function SelectField({label, name, id, options, required, className = '',
     const valorAtual = controlado ? value : interno;
     const opcaoAtual = options.find((opt) => opt.value === valorAtual);
 
-    useEffect(() => {
-        const handleClickFora = (event) => {
-            if (rootRef.current && !rootRef.current.contains(event.target)) {
-                setAberto(false);
-            }
-        };
-
-        window.addEventListener('mousedown', handleClickFora);
-
-        return () => window.removeEventListener('mousedown', handleClickFora);
-    }, []);
+    useFecharAoClicarFora(rootRef, () => setAberto(false), aberto);
 
     const selecionar = (novoValor) => {
         if (!controlado) {
@@ -59,7 +50,7 @@ export function SelectField({label, name, id, options, required, className = '',
                     {opcaoAtual?.label || placeholderLabel}
                 </span>
 
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-color-blue">
+                <span className="pointer-events-none absolute inset-y-0 right-s3 flex items-center text-color-blue">
                     <Funnel aria-hidden="true" className="h-4 w-4" />
                 </span>
             </button>

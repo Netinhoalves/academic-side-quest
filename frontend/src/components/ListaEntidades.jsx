@@ -1,5 +1,6 @@
 import { ChevronDown, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import useFecharAoClicarFora from '../hooks/useFecharAoClicarFora';
 
 export default function ListaEntidades({
     titulo,
@@ -67,8 +68,12 @@ export default function ListaEntidades({
 }
 
 function EntityActions({ item, inativo, onEditar, podeEditar, renderAcoes, aberta, onAlternar, onFechar }) {
+    const menuRef = useRef(null);
+
+    useFecharAoClicarFora(menuRef, onFechar, aberta);
+
     return (
-        <div className="relative shrink-0">
+        <div ref={menuRef} className="relative shrink-0">
             <button type="button" onClick={onAlternar} className={`flex cursor-pointer items-center gap-3 rounded-md px-5 py-2 text-lg text-white transition-colors ${inativo ? 'bg-gray-500 hover:bg-gray-600' : 'bg-color-blue hover:bg-color-blue-light'}`}>
                 Ações <ChevronDown size={20} className={`transition-transform duration-200 ${aberta ? 'rotate-180' : ''}`} />
             </button>
