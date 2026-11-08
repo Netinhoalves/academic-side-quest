@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export function CampoSenha({ label, name, id, required, value, onChange, className = '' }) {
+const ESTILO_DO_CAMPO = 'w-full bg-[#D5800BD4] border border-[#B8731D] rounded-[10px] px-3 py-2 sm:py-3 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]';
+
+export function CampoSenha({ label, name, id, required, value, onChange, className = '', estiloDoCampo = ESTILO_DO_CAMPO }) {
     const [visivel, setVisivel] = useState(false);
 
     return (
@@ -19,8 +21,7 @@ export function CampoSenha({ label, name, id, required, value, onChange, classNa
                     value={value}
                     onChange={onChange}
                     required={required}
-                    className="w-full bg-[#D5800BD4] border border-[#B8731D] rounded-[10px] px-3 py-2 sm:py-3 pr-11
-                               text-gray-900 outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]"
+                    className={`${estiloDoCampo} pr-11`}
                 />
                 <button
                     type="button"

@@ -460,6 +460,7 @@ export default function PainelADM() {
                                                 value={cadastroDocente[id]}
                                                 onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
                                                 required
+                                                estiloDoCampo="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
                                             />
                                         ) : (
                                             <input
