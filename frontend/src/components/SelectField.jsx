@@ -1,5 +1,6 @@
 import { Funnel } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import useFecharAoClicarFora from '../hooks/useFecharAoClicarFora';
 
 export function SelectField({label, name, id, options, required, className = '', value, onChange, placeholderLabel = 'Selecione...', ...props}) {
     const rootRef = useRef(null);
@@ -10,17 +11,7 @@ export function SelectField({label, name, id, options, required, className = '',
     const valorAtual = controlado ? value : interno;
     const opcaoAtual = options.find((opt) => opt.value === valorAtual);
 
-    useEffect(() => {
-        const handleClickFora = (event) => {
-            if (rootRef.current && !rootRef.current.contains(event.target)) {
-                setAberto(false);
-            }
-        };
-
-        window.addEventListener('mousedown', handleClickFora);
-
-        return () => window.removeEventListener('mousedown', handleClickFora);
-    }, []);
+    useFecharAoClicarFora(rootRef, () => setAberto(false), aberto);
 
     const selecionar = (novoValor) => {
         if (!controlado) {
@@ -52,7 +43,7 @@ export function SelectField({label, name, id, options, required, className = '',
                 aria-expanded={aberto}
                 onClick={() => setAberto((atual) => !atual)}
                 className={`w-full relative text-left appearance-none bg-[#ffd08b] rounded-[10px] px-3 py-2 sm:py-3 pr-10
-                           text-gray-900 font-jaro outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)] ${className}`}
+                           text-[#172B68] font-jaro outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)] ${className}`}
                 {...props}
             >
                 <span className="text-[#172B68]">

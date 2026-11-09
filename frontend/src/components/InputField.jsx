@@ -1,4 +1,10 @@
+import { CampoSenha } from './CampoSenha';
+
 export function InputField({label, type = 'text', name, id, required}) {
+    if (type === 'password') {
+        return <CampoSenha label={label} name={name} id={id} required={required} className="flex flex-col w-full max-w-[442px] mb-3" />;
+    }
+
     return (
         <div className="flex flex-col w-full max-w-[442px] mb-3">
             <label htmlFor={id} className="text-color-blue font-bold text-base sm:text-lg mb-1 flex items-center">
