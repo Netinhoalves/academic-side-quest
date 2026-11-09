@@ -1,7 +1,7 @@
 import { Plus, Save } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import ProjetoForm from '../components/ProjetoForm';
 import CategoriaForm from '../components/CategoriaForm';
 import SubcategoriaForm from '../components/SubcategoriaForm';
@@ -94,7 +94,7 @@ export default function AdicionarProjeto() {
     const etapas = ['Projeto', 'Categoria', 'Subcategoria'];
 
     return (
-        <LayoutCoordenador>
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
             <div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">
                 <div className="w-full max-w-[1000px]">
                     <div className="mb-6 grid grid-cols-3 gap-2">
@@ -126,6 +126,6 @@ export default function AdicionarProjeto() {
                     </section>}
                 </div>
             </div>
-        </LayoutCoordenador>
+        </LayoutPadrao>
     );
 }

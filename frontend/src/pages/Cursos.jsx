@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import ListaEntidades from '../components/ListaEntidades';
 import { deleteCurso, getCursos } from '../services/api';
 
@@ -29,7 +29,7 @@ export default function Cursos() {
     }
 
     return (
-        <LayoutCoordenador>
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
             {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
             {carregando ? (
                 <p>Carregando cursos...</p>
@@ -64,6 +64,6 @@ export default function Cursos() {
                     Nenhum curso cadastrado no momento.
                 </p>
             )}
-        </LayoutCoordenador>
+        </LayoutPadrao>
     );
 }

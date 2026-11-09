@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import ListaEntidades from '../components/ListaEntidades';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { getPpc } from '../services/api';
 
 export default function Categorias() {
@@ -16,8 +17,15 @@ export default function Categorias() {
             .catch((error) => setErro(error.message || 'Não foi possível carregar as categorias'));
     }, [projetoId]);
 
+    const itensBreadcrumb = [
+        { label: 'Gerenciar projetos', rota: '/gerenciar-projetos' },
+        { label: projeto?.nome || 'Categorias', rota: null }
+    ];
+
     return (
-        <LayoutCoordenador>
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
+            <Breadcrumbs itens={itensBreadcrumb} />
+
             {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
             {projeto?.em_uso && <p className="mb-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Este PPC está em uso por alunos: as categorias não podem ser alteradas.</p>}
             {projeto && <ListaEntidades
@@ -33,6 +41,6 @@ export default function Categorias() {
                 renderAcoes={(categoria) => <button type="button" onClick={() => navigate(`/projeto/${projetoId}/categoria/${categoria.id}/subcategorias`)} className="block w-full px-4 py-2 text-left hover:bg-[#FFDBAD]">Gerenciar subcategorias</button>}
             />}
             {projeto && projeto.categorias?.length === 0 && <p className="mt-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Nenhuma categoria foi criada para este projeto.</p>}
-        </LayoutCoordenador>
+        </LayoutPadrao>
     );
 }
