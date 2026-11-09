@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Pencil, LogOut, ArrowLeft } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
+import { CampoSenha } from '../components/CampoSenha';
 import Modal from '../components/Modal';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
 import { lerUsuario, limparSessao } from '../services/sessao';
@@ -450,17 +451,28 @@ export default function PainelADM() {
                                     ['email', 'E-mail', 'email'],
                                     ['senha', 'Senha', 'password'],
                                 ].map(([id, label, type]) => (
-                                    <label key={id} htmlFor={`docente-${id}`} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
-                                        {label}
-                                        <input
-                                            id={`docente-${id}`}
-                                            type={type}
-                                            value={cadastroDocente[id]}
-                                            onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
-                                            required
-                                            className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
-                                        />
-                                    </label>
+                                    <div key={id} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+                                        <label htmlFor={`docente-${id}`}>{label}</label>
+                                        {type === 'password' ? (
+                                            <CampoSenha
+                                                id={`docente-${id}`}
+                                                name={`docente-${id}`}
+                                                value={cadastroDocente[id]}
+                                                onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
+                                                required
+                                                estiloDoCampo="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                                            />
+                                        ) : (
+                                            <input
+                                                id={`docente-${id}`}
+                                                type={type}
+                                                value={cadastroDocente[id]}
+                                                onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
+                                                required
+                                                className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                                            />
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                             
