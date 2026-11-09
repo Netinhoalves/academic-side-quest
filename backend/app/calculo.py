@@ -98,7 +98,7 @@ def recalcular_pontos_do_aluno(db: Session, id_aluno: int) -> dict[int, Decimal]
     if not aluno:
         raise ValueError(f"Aluno {id_aluno} não encontrado")
 
-    solicitacoes = db.query(models.Solicitacao).filter(models.Solicitacao.id_aluno == id_aluno).all()
+    solicitacoes = db.query(models.Solicitacao).filter(models.Solicitacao.id_aluno == id_aluno).with_for_update().all()
     aprovadas = [
         SolicitacaoAprovada(
             id=s.id,
