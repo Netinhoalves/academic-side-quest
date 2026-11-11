@@ -266,14 +266,50 @@ class CadastroPPC(BaseModel):
 class AtivacaoPPC(BaseModel):
     ativo: bool
 
+class SemestreAproveitado(BaseModel):
+    ano: int
+    semestre: int
+    aproveitado: Pontos
+
+class ProgressoSubcategoria(BaseModel):
+    id: int
+    codigo: str
+    nome: str
+    limite_semestre: Pontos
+    aproveitado_total: Pontos
+    semestres: List[SemestreAproveitado]
+
+class ProgressoCategoria(BaseModel):
+    id: int
+    nome: str
+    limite_total: Pontos
+    limite_semestre: Pontos
+    aproveitado_total: Pontos
+    semestres: List[SemestreAproveitado]
+    subcategorias: List[ProgressoSubcategoria]
+
+class Progresso(BaseModel):
+    """Formato do docs/api/contrato-entrega-final.md: só contam as solicitações aprovadas."""
+    total_exigido: Pontos
+    total_aproveitado: Pontos
+    percentual: Pontos
+    pendentes: int
+    categorias: List[ProgressoCategoria]
+
 class Aluno(BaseModel):
+    """Aluno com o progresso resumido, como na lista de alunos do contrato."""
     id: int
     id_usuario: int
-    id_ppc: int
+    nome: str
+    email: str
+    matricula: Optional[str] = None
     data_ingresso: date
-    status: str
-
-    model_config = ConfigDict(from_attributes=True)
+    curso: Curso
+    ppc: PPCResumo
+    total_exigido: Pontos
+    total_aproveitado: Pontos
+    percentual: Pontos
+    pendentes: int
 
 class CadastroAluno(BaseModel):
     nome: Nome
@@ -351,6 +387,11 @@ class Solicitacao(BaseModel):
     avaliador: Optional[Avaliador] = None
     created_at: datetime
     updated_at: datetime
+
+class AlunoDetalhe(BaseModel):
+    aluno: Aluno
+    progresso: Progresso
+    solicitacoes: List[Solicitacao]
 
 class CurrentUser(BaseModel):
     id: int
