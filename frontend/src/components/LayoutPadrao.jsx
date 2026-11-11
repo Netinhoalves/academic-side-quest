@@ -79,13 +79,63 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
         });
     }
 
-    return (
+return (
         <div className="relative min-h-screen bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
             <Header
                 usuario={usuario}
                 temMenu={temMenu}
                 onAbrirMenu={() => setMenuMobileAberto(true)}
             />
+
+            {temMenu && menuMobileAberto && (
+                <div className="md:hidden fixed inset-0 z-40 bg-black/40">
+                    <aside
+                        ref={menuMobileRef}
+                        className="w-[240px] h-full bg-color-blue text-white flex flex-col justify-between py-6 px-5 shadow-xl"
+                    >
+                        <div>
+                            <div className="flex items-center justify-between mb-12">
+                                {itemInicial && (
+                                    <Link
+                                        to={itemInicial.rota}
+                                        onClick={() => setMenuMobileAberto(false)}
+                                        className={`flex items-center gap-3 text-2xl transition-colors hover:text-color-yellow ${
+                                            location.pathname === itemInicial.rota ? 'text-color-yellow' : ''
+                                        }`}
+                                    >
+                                        <Home size={25} />
+                                        <span>{itemInicial.texto}</span>
+                                    </Link>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setMenuMobileAberto(false)}
+                                    aria-label="Fechar menu"
+                                    className="p-1 hover:text-color-yellow transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <nav className="flex flex-col gap-6 text-lg">
+                                {restantesItens.map(({ texto, rota, icone: Icon }) => (
+                                    <Link
+                                        key={rota}
+                                        to={rota}
+                                        onClick={() => setMenuMobileAberto(false)}
+                                        className={`flex items-center gap-3 transition-colors ${
+                                            location.pathname === rota ? 'text-color-yellow' : 'hover:text-color-yellow'
+                                        }`}
+                                    >
+                                        <Icon size={18} />
+                                        <span>{texto}</span>
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
+                    </aside>
+                </div>
+            )}
 
             <div className="relative z-10 flex flex-1 min-h-[calc(100vh-75px)]">
                 {temMenu && (
@@ -137,56 +187,6 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
                             {!menuRecolhido && <span>Exibir menos</span>}
                         </button>
                     </aside>
-                )}
-
-                {temMenu && menuMobileAberto && (
-                    <div className="md:hidden fixed inset-0 z-40 bg-black/40">
-                        <aside
-                            ref={menuMobileRef}
-                            className="w-[240px] h-full bg-color-blue text-white flex flex-col justify-between py-6 px-5 shadow-xl"
-                        >
-                            <div>
-                                <div className="flex items-center justify-between mb-12">
-                                    {itemInicial && (
-                                        <Link
-                                            to={itemInicial.rota}
-                                            onClick={() => setMenuMobileAberto(false)}
-                                            className={`flex items-center gap-3 text-2xl transition-colors hover:text-color-yellow ${
-                                                location.pathname === itemInicial.rota ? 'text-color-yellow' : ''
-                                            }`}
-                                        >
-                                            <Home size={25} />
-                                            <span>{itemInicial.texto}</span>
-                                        </Link>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => setMenuMobileAberto(false)}
-                                        aria-label="Fechar menu"
-                                        className="p-1 hover:text-color-yellow transition-colors"
-                                    >
-                                        <X size={24} />
-                                    </button>
-                                </div>
-
-                                <nav className="flex flex-col gap-6 text-lg">
-                                    {restantesItens.map(({ texto, rota, icone: Icon }) => (
-                                        <Link
-                                            key={rota}
-                                            to={rota}
-                                            onClick={() => setMenuMobileAberto(false)}
-                                            className={`flex items-center gap-3 transition-colors ${
-                                                location.pathname === rota ? 'text-color-yellow' : 'hover:text-color-yellow'
-                                            }`}
-                                        >
-                                            <Icon size={18} />
-                                            <span>{texto}</span>
-                                        </Link>
-                                    ))}
-                                </nav>
-                            </div>
-                        </aside>
-                    </div>
                 )}
 
                 <main className="relative min-w-0 flex-1 flex flex-col items-center px-5 py-10 md:px-12 lg:px-16">

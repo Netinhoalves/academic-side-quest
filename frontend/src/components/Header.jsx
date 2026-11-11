@@ -17,13 +17,13 @@ export default function Header({ usuario, temMenu, onAbrirMenu }) {
 
     return (
         <header className="relative z-20 bg-color-orange-bright h-[75px] w-full px-5 flex justify-between items-center shadow-md shrink-0">
-            <div className="flex items-center gap-3 text-white">
+            <div className="flex items-center gap-3 text-white min-w-0">
                 {temMenu && (
                     <button
                         type="button"
                         onClick={onAbrirMenu}
                         aria-label="Abrir menu"
-                        className="md:hidden p-1 rounded hover:opacity-80 transition-opacity"
+                        className="md:hidden p-1 rounded hover:opacity-80 transition-opacity shrink-0"
                     >
                         <Menu size={28} />
                     </button>
@@ -33,14 +33,14 @@ export default function Header({ usuario, temMenu, onAbrirMenu }) {
                     {iniciais}
                 </div>
 
-                <div className="leading-tight">
-                    <p className="text-base sm:text-lg">{nome}</p>
-                    <p className="text-xs sm:text-sm opacity-95 capitalize">{perfil} / IFMS - TL</p>
+                <div className="leading-tight min-w-0">
+                    <p className="font-bold text-base sm:text-lg truncate">{nome}</p>
+                    <p className="text-xs sm:text-sm opacity-95 capitalize truncate">{perfil} / IFMS - TL</p>
                 </div>
             </div>
 
-            <div className="flex items-center gap-4">
-                <Link to={linkInicial} title="Ir para a tela inicial" className="hover:opacity-90 transition-opacity">
+            <div className="flex items-center gap-4 shrink-0">
+                <Link to={linkInicial} title="Ir para a tela inicial" className="hidden sm:block hover:opacity-90 transition-opacity">
                     <img src={logoAsq} alt="Logo ASQ" className="h-11 w-auto" />
                 </Link>
 
