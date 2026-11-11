@@ -79,7 +79,7 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
         });
     }
 
-return (
+    return (
         <div className="relative min-h-screen bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
             <Header
                 usuario={usuario}
