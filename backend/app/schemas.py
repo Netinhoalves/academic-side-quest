@@ -266,14 +266,50 @@ class CadastroPPC(BaseModel):
 class AtivacaoPPC(BaseModel):
     ativo: bool
 
+class SemestreAproveitado(BaseModel):
+    ano: int
+    semestre: int
+    aproveitado: Pontos
+
+class ProgressoSubcategoria(BaseModel):
+    id: int
+    codigo: str
+    nome: str
+    limite_semestre: Pontos
+    aproveitado_total: Pontos
+    semestres: List[SemestreAproveitado]
+
+class ProgressoCategoria(BaseModel):
+    id: int
+    nome: str
+    limite_total: Pontos
+    limite_semestre: Pontos
+    aproveitado_total: Pontos
+    semestres: List[SemestreAproveitado]
+    subcategorias: List[ProgressoSubcategoria]
+
+class Progresso(BaseModel):
+    """Formato do docs/api/contrato-entrega-final.md: só contam as solicitações aprovadas."""
+    total_exigido: Pontos
+    total_aproveitado: Pontos
+    percentual: Pontos
+    pendentes: int
+    categorias: List[ProgressoCategoria]
+
 class Aluno(BaseModel):
+    """Aluno com o progresso resumido, como na lista de alunos do contrato."""
     id: int
     id_usuario: int
-    id_ppc: int
+    nome: str
+    email: str
+    matricula: Optional[str] = None
     data_ingresso: date
-    status: str
-
-    model_config = ConfigDict(from_attributes=True)
+    curso: Curso
+    ppc: PPCResumo
+    total_exigido: Pontos
+    total_aproveitado: Pontos
+    percentual: Pontos
+    pendentes: int
 
 class CadastroAluno(BaseModel):
     nome: Nome
@@ -301,25 +337,61 @@ class AlunoCadastrado(BaseModel):
     data_ingresso: date
     status: str
 
-class Solicitacao(BaseModel):
+class AlunoDaSolicitacao(BaseModel):
     id: int
-    id_aluno: int
-    id_regra_pontuacao: int
+    nome: str
+    matricula: Optional[str] = None
+
+class RegraResumo(BaseModel):
+    id: int
+    titulo_exibicao: str
+    tipo: str
+    multiplicador: Pontos
+    operacao: Literal["SOMA", "MULTIPLICACAO"]
+
+    model_config = ConfigDict(from_attributes=True)
+
+class SubcategoriaResumo(BaseModel):
+    id: int
+    codigo: str
+    nome: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class CategoriaResumo(BaseModel):
+    id: int
+    nome: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+class Avaliador(BaseModel):
+    id: int
+    nome: str
+
+class Solicitacao(BaseModel):
+    """Formato do docs/api/contrato-entrega-final.md: o caminho do arquivo no servidor não sai na resposta."""
+    id: int
+    aluno: AlunoDaSolicitacao
     descricao_atividade: str
     data_atividade: date
     ano: int
     semestre: int
     quantidade: Optional[Pontos] = None
-    arquivo: str
     pontos_calculados: Pontos
     pontos_aproveitados: Optional[Pontos] = None
     status: Literal["PENDENTE", "APROVADA", "REJEITADA"]
-    id_avaliador: Optional[int] = None
     observacao: Optional[str] = None
+    regra: RegraResumo
+    subcategoria: SubcategoriaResumo
+    categoria: CategoriaResumo
+    avaliador: Optional[Avaliador] = None
     created_at: datetime
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+class AlunoDetalhe(BaseModel):
+    aluno: Aluno
+    progresso: Progresso
+    solicitacoes: List[Solicitacao]
 
 class CurrentUser(BaseModel):
     id: int

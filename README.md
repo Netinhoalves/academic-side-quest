@@ -141,9 +141,19 @@ No servidor (Linux com Docker), na pasta do repositório e na branch `main`:
    docker compose up -d --build
    ```
 
-Sem `SITE_ADDRESS`, o Caddy responde só em HTTP, na porta 80. No servidor, nunca rode `docker compose down -v`: o `-v` apaga o banco.
+Sem `SITE_ADDRESS`, o Caddy responde só em HTTP, na porta 80. No servidor, nunca rode `docker compose down -v`: o `-v` apaga o banco e os comprovantes dos alunos.
 
 As senhas das contas de teste estão neste README, que é público. Para uso real, troque a senha do administrador e a do coordenador no servidor, pelo `PUT /usuarios/{id}` da documentação da API.
+
+## Comprovantes
+
+Os comprovantes que os alunos enviam com as atividades (PDF, JPG ou PNG, até 5 MB) ficam numa pasta, fora do banco. O banco guarda só o nome do arquivo, e o comprovante só é aberto pela rota `GET /solicitacoes/{id}/arquivo`, com login do aluno dono, de um professor ou do coordenador.
+
+- **Com Docker** (no computador e no servidor): no volume `comprovantes`, montado em `/app/uploads` no container da API. Atualizar ou recriar a API não apaga os arquivos.
+- **Com o backend rodando manualmente** (etapa 3): na pasta `backend/uploads/`, que está no `.gitignore`.
+- **Limites:** a API recusa arquivos com mais de 5 MB. No servidor, o Caddy recusa antes qualquer envio com mais de 10 MB, para um arquivo grande nem chegar na API.
+
+A pasta pode ser trocada pela variável `UPLOAD_DIR`. O `docker compose down -v` apaga o volume dos comprovantes junto com o do banco.
 
 ## Usuários de teste
 
@@ -180,16 +190,16 @@ Para parar e remover os containers da API e do MySQL:
 docker compose down
 ```
 
-Esse comando remove os containers da API e do MySQL, mas não remove o volume do banco; os dados continuam disponíveis quando os serviços forem iniciados novamente.
+Esse comando remove os containers da API e do MySQL, mas não remove os volumes do banco e dos comprovantes; os dados continuam disponíveis quando os serviços forem iniciados novamente.
 
-Para recriar o banco do zero, incluindo schema e seed, remova também o volume:
+Para recriar o banco do zero, incluindo schema e seed, remova também os volumes:
 
 ```bat
 docker compose down -v
 docker compose up -d
 ```
 
-**Atenção:** `docker compose down -v` apaga todos os dados armazenados no volume do banco. Use somente se puder perder esses dados.
+**Atenção:** `docker compose down -v` apaga todos os dados do banco e os comprovantes enviados pelos alunos. Use somente se puder perder esses dados.
 
 ### Schema do banco de dados
 
