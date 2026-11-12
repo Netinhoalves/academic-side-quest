@@ -266,50 +266,14 @@ class CadastroPPC(BaseModel):
 class AtivacaoPPC(BaseModel):
     ativo: bool
 
-class SemestreAproveitado(BaseModel):
-    ano: int
-    semestre: int
-    aproveitado: Pontos
-
-class ProgressoSubcategoria(BaseModel):
-    id: int
-    codigo: str
-    nome: str
-    limite_semestre: Pontos
-    aproveitado_total: Pontos
-    semestres: List[SemestreAproveitado]
-
-class ProgressoCategoria(BaseModel):
-    id: int
-    nome: str
-    limite_total: Pontos
-    limite_semestre: Pontos
-    aproveitado_total: Pontos
-    semestres: List[SemestreAproveitado]
-    subcategorias: List[ProgressoSubcategoria]
-
-class Progresso(BaseModel):
-    """Formato do docs/api/contrato-entrega-final.md: só contam as solicitações aprovadas."""
-    total_exigido: Pontos
-    total_aproveitado: Pontos
-    percentual: Pontos
-    pendentes: int
-    categorias: List[ProgressoCategoria]
-
 class Aluno(BaseModel):
-    """Aluno com o progresso resumido, como na lista de alunos do contrato."""
     id: int
     id_usuario: int
-    nome: str
-    email: str
-    matricula: Optional[str] = None
+    id_ppc: int
     data_ingresso: date
-    curso: Curso
-    ppc: PPCResumo
-    total_exigido: Pontos
-    total_aproveitado: Pontos
-    percentual: Pontos
-    pendentes: int
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
 
 class CadastroAluno(BaseModel):
     nome: Nome
@@ -337,61 +301,46 @@ class AlunoCadastrado(BaseModel):
     data_ingresso: date
     status: str
 
-class AlunoDaSolicitacao(BaseModel):
-    id: int
-    nome: str
-    matricula: Optional[str] = None
-
-class RegraResumo(BaseModel):
-    id: int
-    titulo_exibicao: str
-    tipo: str
-    multiplicador: Pontos
-    operacao: Literal["SOMA", "MULTIPLICACAO"]
-
-    model_config = ConfigDict(from_attributes=True)
-
-class SubcategoriaResumo(BaseModel):
-    id: int
-    codigo: str
-    nome: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class CategoriaResumo(BaseModel):
-    id: int
-    nome: str
-
-    model_config = ConfigDict(from_attributes=True)
-
-class Avaliador(BaseModel):
-    id: int
-    nome: str
-
 class Solicitacao(BaseModel):
-    """Formato do docs/api/contrato-entrega-final.md: o caminho do arquivo no servidor não sai na resposta."""
     id: int
-    aluno: AlunoDaSolicitacao
+    id_aluno: int
+    id_regra_pontuacao: int
     descricao_atividade: str
     data_atividade: date
     ano: int
     semestre: int
     quantidade: Optional[Pontos] = None
+    arquivo: str
     pontos_calculados: Pontos
     pontos_aproveitados: Optional[Pontos] = None
     status: Literal["PENDENTE", "APROVADA", "REJEITADA"]
+    id_avaliador: Optional[int] = None
     observacao: Optional[str] = None
-    regra: RegraResumo
-    subcategoria: SubcategoriaResumo
-    categoria: CategoriaResumo
-    avaliador: Optional[Avaliador] = None
     created_at: datetime
     updated_at: datetime
 
-class AlunoDetalhe(BaseModel):
-    aluno: Aluno
-    progresso: Progresso
-    solicitacoes: List[Solicitacao]
+    model_config = ConfigDict(from_attributes=True)
+
+def validar_observacao_obrigatoria(valor: str) -> str:
+    """A observação ao recusar é obrigatória: tira os espaços das pontas e não aceita texto vazio (até 5000 caracteres)."""
+    valor = valor.strip()
+    if not valor:
+        raise PydanticCustomError("valor_invalido", "A observação é obrigatória para recusar a solicitação")
+    if len(valor) > 5000:
+        raise PydanticCustomError("valor_invalido", "A observação deve ter no máximo 5000 caracteres")
+    return valor
+
+class AprovacaoSolicitacao(BaseModel):
+    observacao: Optional[TextoOpcional] = None
+
+    @field_validator("observacao")
+    @classmethod
+    def observacao_vazia_vira_none(cls, valor: Optional[str]) -> Optional[str]:
+        """Observação em branco vira None, para não gravar texto vazio."""
+        return valor or None
+
+class RejeicaoSolicitacao(BaseModel):
+    observacao: Annotated[str, AfterValidator(validar_observacao_obrigatoria)]
 
 class CurrentUser(BaseModel):
     id: int
