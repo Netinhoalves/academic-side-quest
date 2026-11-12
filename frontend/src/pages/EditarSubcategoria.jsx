@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import SubcategoriaForm from '../components/SubcategoriaForm';
 import { getPpc, updatePpc } from '../services/api';
 
@@ -38,5 +38,5 @@ export default function EditarSubcategoria() {
         }
     }
 
-    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]">{erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}{subcategoria && <SubcategoriaForm titulo="Editar Subcategoria" subcategoria={subcategoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias`)} carregando={carregando} />}</div></div></LayoutCoordenador>;
+    return <LayoutPadrao perfisPermitidos={['coordenador']}><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]">{erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}{subcategoria && <SubcategoriaForm titulo="Editar Subcategoria" subcategoria={subcategoria} onSubmit={handleSubmit} onCancelar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias`)} carregando={carregando} />}</div></div></LayoutPadrao>;
 }

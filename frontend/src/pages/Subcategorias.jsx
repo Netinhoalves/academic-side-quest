@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import ListaEntidades from '../components/ListaEntidades';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { getPpc } from '../services/api';
 
 export default function Subcategorias() {
@@ -15,22 +16,32 @@ export default function Subcategorias() {
         getPpc(projetoId, localStorage.getItem('asq_token')).then(setProjeto).catch((error) => setErro(error.message || 'Não foi possível carregar as subcategorias'));
     }, [projetoId]);
 
-    return <LayoutCoordenador>
-        {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
-        {projeto?.em_uso && <p className="mb-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Este PPC está em uso por alunos: as subcategorias não podem ser alteradas.</p>}
-        {categoria && <ListaEntidades
-            titulo={`Subcategorias - ${categoria.nome}`}
-            textoAdicionar="Subcategoria"
-            itens={categoria.subcategorias || []}
-            mostrarAdicionar={!projeto.em_uso}
-            podeEditar={() => !projeto.em_uso}
-            onAdicionar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/adicionar`)}
-            onEditar={(id) => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/${id}/editar`)}
-            renderTitulo={(subcategoria) => <><span className="mr-3">{subcategoria.codigo}</span>{subcategoria.nome}</>}
-            renderDescricao={(subcategoria) => subcategoria.documentacao_pedida}
-            renderExtra={(subcategoria) => <span className="shrink-0 text-lg">{subcategoria.limite_semestre} pontos</span>}
-            renderAcoes={(subcategoria) => <span className="block px-4 py-2 text-left">{subcategoria.regras?.length || 0} regra(s) de pontuação</span>}
-        />}
-        {categoria && categoria.subcategorias?.length === 0 && <p className="mt-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Nenhuma subcategoria foi criada para esta categoria.</p>}
-    </LayoutCoordenador>;
+    const itensBreadcrumb = [
+        { label: 'Gerenciar projetos', rota: '/gerenciar-projetos' },
+        { label: projeto?.nome || 'Categorias', rota: `/projeto/${projetoId}/categorias` },
+        { label: categoria?.nome || 'Subcategorias', rota: null }
+    ];
+
+    return (
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
+            <Breadcrumbs itens={itensBreadcrumb} />
+
+            {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
+            {projeto?.em_uso && <p className="mb-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Este PPC está em uso por alunos: as subcategorias não podem ser alteradas.</p>}
+            {categoria && <ListaEntidades
+                titulo={`Subcategorias - ${categoria.nome}`}
+                textoAdicionar="Subcategoria"
+                itens={categoria.subcategorias || []}
+                mostrarAdicionar={!projeto.em_uso}
+                podeEditar={() => !projeto.em_uso}
+                onAdicionar={() => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/adicionar`)}
+                onEditar={(id) => navigate(`/projeto/${projetoId}/categoria/${categoriaId}/subcategorias/${id}/editar`)}
+                renderTitulo={(subcategoria) => <><span className="mr-3">{subcategoria.codigo}</span>{subcategoria.nome}</>}
+                renderDescricao={(subcategoria) => subcategoria.documentacao_pedida}
+                renderExtra={(subcategoria) => <span className="shrink-0 text-lg">{subcategoria.limite_semestre} pontos</span>}
+                renderAcoes={(subcategoria) => <span className="block px-4 py-2 text-left">{subcategoria.regras?.length || 0} regra(s) de pontuação</span>}
+            />}
+            {categoria && categoria.subcategorias?.length === 0 && <p className="mt-4 rounded-md bg-[#FFDBAD] px-4 py-3 text-lg">Nenhuma subcategoria foi criada para esta categoria.</p>}
+        </LayoutPadrao>
+    );
 }

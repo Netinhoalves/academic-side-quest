@@ -3,6 +3,10 @@
 
     redir /api /api/
     handle_path /api/* {
+        # Barra envios grandes antes da API; o limite de 5 MB por comprovante é conferido na própria API
+        request_body {
+            max_size 10MB
+        }
         reverse_proxy api:8000
     }
 

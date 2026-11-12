@@ -1,11 +1,10 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Pencil, LogOut, ArrowLeft } from 'lucide-react'; 
+import { Pencil } from 'lucide-react'; 
 import { SelectField } from '../components/SelectField';
 import { CampoSenha } from '../components/CampoSenha';
 import Modal from '../components/Modal';
 import { createUser, getProfiles, getUsers, updateUser } from '../services/api';
-import { lerUsuario, limparSessao } from '../services/sessao';
+import { lerUsuario } from '../services/sessao';
 import LayoutPadrao from '../components/LayoutPadrao'; 
 
 const camposEdicao = [
@@ -342,18 +341,6 @@ export default function PainelADM() {
                     >
                         Cadastro de Servidor
                     </button>
-                </div>
-
-                <div className="w-full flex justify-center mt-12">
-                    <Link 
-                        to={perfilLogado === 'coordenador' ? '/coordenador' : '/'} 
-                        onClick={perfilLogado === 'coordenador' ? undefined : limparSessao} 
-                        className="bg-color-blue text-white font-jaro tracking-widest px-6 py-2 rounded-md hover:scale-105 transition-transform flex items-center gap-2 shadow-md text-lg"
-                    >
-                        {perfilLogado === 'coordenador' 
-                            ? <>Voltar ao início <ArrowLeft size={20} strokeWidth={3} /></>
-                            : <>Sair do Painel <LogOut size={20} strokeWidth={3} /></>}
-                    </Link>
                 </div>
             </div>
 
