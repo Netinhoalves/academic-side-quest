@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import ListaEntidades from '../components/ListaEntidades';
 import { alterarAtivoPpc, getPpcs } from '../services/api';
 import { lerUsuario } from '../services/sessao';
@@ -32,7 +32,7 @@ export default function Projetos() {
     }, []);
 
     return (
-        <LayoutCoordenador>
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
             {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
             {carregando ? <p>Carregando projetos...</p> : <ListaEntidades
                 titulo="Projetos"
@@ -46,6 +46,6 @@ export default function Projetos() {
                 itemInativo={(projeto) => projeto.ativo === false}
                 podeEditar={(projeto) => !projeto.em_uso}
             />}
-        </LayoutCoordenador>
+        </LayoutPadrao>
     );
 }

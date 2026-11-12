@@ -1,5 +1,5 @@
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import CategoriaForm from '../components/CategoriaForm';
 
 export default function AdicionarCategoria() {
@@ -34,5 +34,5 @@ export default function AdicionarCategoria() {
         });
     }
 
-    return <LayoutCoordenador><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]"><CategoriaForm titulo="Adicionar Categoria" onSubmit={handleSubmit} onCancelar={voltar} mostrarVoltar /></div></div></LayoutCoordenador>;
+    return <LayoutPadrao perfisPermitidos={['coordenador']}><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]"><CategoriaForm titulo="Adicionar Categoria" onSubmit={handleSubmit} onCancelar={voltar} mostrarVoltar /></div></div></LayoutPadrao>;
 }

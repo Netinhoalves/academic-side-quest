@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import LayoutCoordenador from '../components/LayoutCoordenador';
+import LayoutPadrao from '../components/LayoutPadrao';
 import CursoForm from '../components/CursoForm';
 import { getCursos, updateCurso } from '../services/api';
 
@@ -51,7 +51,7 @@ export default function EditarCurso() {
     }
 
     return (
-        <LayoutCoordenador>
+        <LayoutPadrao perfisPermitidos={['coordenador']}>
             <div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">
                 <div className="w-full max-w-[1000px]">
                     {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
@@ -67,6 +67,6 @@ export default function EditarCurso() {
                     )}
                 </div>
             </div>
-        </LayoutCoordenador>
+        </LayoutPadrao>
     );
 }
