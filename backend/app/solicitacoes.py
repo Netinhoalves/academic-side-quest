@@ -8,8 +8,7 @@ from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, field_validator
-from pydantic_core import PydanticCustomError
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -200,32 +199,27 @@ def baixar_comprovante(
     )
 
 
+MINIMO_MOTIVO_RECUSA = 3
+LIMITE_OBSERVACAO = 1000
+
+
 class AprovacaoSolicitacao(BaseModel):
     observacao: Optional[str] = None
 
-    @field_validator("observacao")
-    @classmethod
-    def limpar_observacao(cls, valor: Optional[str]) -> Optional[str]:
-        """Tira os espaços das pontas; observação em branco vira None (até 5000 caracteres)."""
-        valor = valor.strip() if valor else None
-        if valor and len(valor) > 5000:
-            raise PydanticCustomError("valor_invalido", "A observação deve ter no máximo 5000 caracteres")
-        return valor or None
-
 
 class RejeicaoSolicitacao(BaseModel):
-    observacao: str
+    # Opcional aqui para a rota responder "Informe o motivo da recusa" em vez do "Field required" do Pydantic
+    observacao: Optional[str] = None
 
-    @field_validator("observacao")
-    @classmethod
-    def observacao_obrigatoria(cls, valor: str) -> str:
-        """Ao rejeitar a observação é obrigatória: tira os espaços das pontas e não aceita texto vazio (até 5000 caracteres)."""
-        valor = valor.strip()
-        if not valor:
-            raise PydanticCustomError("valor_invalido", "A observação é obrigatória para rejeitar a solicitação")
-        if len(valor) > 5000:
-            raise PydanticCustomError("valor_invalido", "A observação deve ter no máximo 5000 caracteres")
-        return valor
+
+def validar_observacao(observacao: Optional[str], obrigatoria: bool) -> Optional[str]:
+    """Tira os espaços das pontas e confere o tamanho: até 1000 caracteres e, na recusa, no mínimo 3."""
+    observacao = (observacao or "").strip()
+    if obrigatoria and len(observacao) < MINIMO_MOTIVO_RECUSA:
+        erro_validacao("Informe o motivo da recusa")
+    if len(observacao) > LIMITE_OBSERVACAO:
+        erro_validacao("A observação deve ter no máximo 1000 caracteres")
+    return observacao or None
 
 
 def carregar_para_avaliar(db: Session, id_solicitacao: int) -> models.Solicitacao:
@@ -240,7 +234,7 @@ def carregar_para_avaliar(db: Session, id_solicitacao: int) -> models.Solicitaca
     db.refresh(solicitacao, with_for_update=True)
 
     if solicitacao.status != "PENDENTE":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Solicitação já foi avaliada")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Solicitação já avaliada")
     return solicitacao
 
 
@@ -291,18 +285,20 @@ def aprovar_solicitacao(
     db: Session = Depends(get_db),
     validador: models.Usuario = Depends(get_current_validador),
 ):
-    """Aprova uma solicitação pendente, grava quem avaliou e a observação (opcional) e calcula os pontos aproveitados (Requer token de Professor ou Coordenador)."""
+    """Aprova uma solicitação pendente, grava quem avaliou e a observação (opcional, até 1000 caracteres) e calcula os pontos aproveitados (Requer token de Professor ou Coordenador)."""
+    observacao = validar_observacao(dados.observacao if dados else None, obrigatoria=False)
     solicitacao = carregar_para_avaliar(db, id_solicitacao)
-    return avaliar(db, solicitacao, "APROVADA", validador, dados.observacao if dados else None)
+    return avaliar(db, solicitacao, "APROVADA", validador, observacao)
 
 
 @router.patch("/solicitacoes/{id_solicitacao}/rejeitar", response_model=schemas.Solicitacao)
 def rejeitar_solicitacao(
     id_solicitacao: int,
-    dados: RejeicaoSolicitacao,
+    dados: Optional[RejeicaoSolicitacao] = None,
     db: Session = Depends(get_db),
     validador: models.Usuario = Depends(get_current_validador),
 ):
-    """Rejeita uma solicitação pendente com observação obrigatória, sem pontos aproveitados, e recalcula as outras do aluno (Requer token de Professor ou Coordenador)."""
+    """Rejeita uma solicitação pendente com o motivo obrigatório (3 a 1000 caracteres), sem pontos aproveitados, e recalcula as outras do aluno (Requer token de Professor ou Coordenador)."""
+    observacao = validar_observacao(dados.observacao if dados else None, obrigatoria=True)
     solicitacao = carregar_para_avaliar(db, id_solicitacao)
-    return avaliar(db, solicitacao, "REJEITADA", validador, dados.observacao)
+    return avaliar(db, solicitacao, "REJEITADA", validador, observacao)
