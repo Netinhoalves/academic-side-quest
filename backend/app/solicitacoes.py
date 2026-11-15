@@ -8,10 +8,13 @@ from typing import List, Literal, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.auth import get_current_aluno, get_current_user
+from app.auth import get_current_validador
+from app.calculo import recalcular_pontos_do_aluno
 from app.database import get_db
 
 router = APIRouter(tags=["Solicitações"])
@@ -194,3 +197,108 @@ def baixar_comprovante(
         filename=f"comprovante-{solicitacao.id}{caminho.suffix}",
         content_disposition_type="inline",
     )
+
+
+MINIMO_MOTIVO_RECUSA = 3
+LIMITE_OBSERVACAO = 1000
+
+
+class AprovacaoSolicitacao(BaseModel):
+    observacao: Optional[str] = None
+
+
+class RejeicaoSolicitacao(BaseModel):
+    # Opcional aqui para a rota responder "Informe o motivo da recusa" em vez do "Field required" do Pydantic
+    observacao: Optional[str] = None
+
+
+def validar_observacao(observacao: Optional[str], obrigatoria: bool) -> Optional[str]:
+    """Tira os espaços das pontas e confere o tamanho: até 1000 caracteres e, na recusa, no mínimo 3."""
+    observacao = (observacao or "").strip()
+    if obrigatoria and len(observacao) < MINIMO_MOTIVO_RECUSA:
+        erro_validacao("Informe o motivo da recusa")
+    if len(observacao) > LIMITE_OBSERVACAO:
+        erro_validacao("A observação deve ter no máximo 1000 caracteres")
+    return observacao or None
+
+
+def carregar_para_avaliar(db: Session, id_solicitacao: int) -> models.Solicitacao:
+    """Busca a solicitação, trava o aluno e depois a solicitação, e confere se ainda está pendente (senão 409)."""
+    solicitacao = db.get(models.Solicitacao, id_solicitacao)
+    if solicitacao is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solicitação não encontrada")
+
+    # O aluno é travado antes da solicitação, na mesma ordem do cálculo, para que duas
+    # avaliações do mesmo aluno ao mesmo tempo esperem uma pela outra sem travar
+    db.query(models.Aluno).filter(models.Aluno.id == solicitacao.id_aluno).with_for_update().first()
+    db.refresh(solicitacao, with_for_update=True)
+
+    if solicitacao.status != "PENDENTE":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Solicitação já avaliada")
+    return solicitacao
+
+
+def avaliar(
+    db: Session,
+    solicitacao: models.Solicitacao,
+    novo_status: str,
+    validador: models.Usuario,
+    observacao: Optional[str],
+) -> dict:
+    """Grava a decisão, recalcula os pontos aproveitados de todas as solicitações do aluno e devolve a solicitação no formato do contrato."""
+    solicitacao.status = novo_status
+    solicitacao.id_avaliador = validador.id
+    solicitacao.observacao = observacao
+    db.flush()
+
+    recalcular_pontos_do_aluno(db, solicitacao.id_aluno)
+    db.commit()
+
+    db.refresh(solicitacao)
+    return montar_solicitacao(solicitacao)
+
+
+@router.get("/solicitacoes", response_model=List[schemas.Solicitacao])
+def listar_solicitacoes(
+    status_solicitacao: Optional[Literal["PENDENTE", "APROVADA", "REJEITADA"]] = Query(None, alias="status"),
+    id_ppc: Optional[int] = None,
+    id_aluno: Optional[int] = None,
+    db: Session = Depends(get_db),
+    validador: models.Usuario = Depends(get_current_validador),
+):
+    """As solicitações, das mais antigas para as mais novas, com filtros por status, PPC e aluno (Requer token de Professor ou Coordenador)."""
+    consulta = db.query(models.Solicitacao)
+    if status_solicitacao:
+        consulta = consulta.filter(models.Solicitacao.status == status_solicitacao)
+    if id_aluno is not None:
+        consulta = consulta.filter(models.Solicitacao.id_aluno == id_aluno)
+    if id_ppc is not None:
+        consulta = consulta.join(models.Aluno, models.Solicitacao.id_aluno == models.Aluno.id).filter(models.Aluno.id_ppc == id_ppc)
+    solicitacoes = consulta.order_by(models.Solicitacao.created_at.asc(), models.Solicitacao.id.asc()).all()
+    return [montar_solicitacao(solicitacao) for solicitacao in solicitacoes]
+
+
+@router.patch("/solicitacoes/{id_solicitacao}/aprovar", response_model=schemas.Solicitacao)
+def aprovar_solicitacao(
+    id_solicitacao: int,
+    dados: Optional[AprovacaoSolicitacao] = None,
+    db: Session = Depends(get_db),
+    validador: models.Usuario = Depends(get_current_validador),
+):
+    """Aprova uma solicitação pendente, grava quem avaliou e a observação (opcional, até 1000 caracteres) e calcula os pontos aproveitados (Requer token de Professor ou Coordenador)."""
+    observacao = validar_observacao(dados.observacao if dados else None, obrigatoria=False)
+    solicitacao = carregar_para_avaliar(db, id_solicitacao)
+    return avaliar(db, solicitacao, "APROVADA", validador, observacao)
+
+
+@router.patch("/solicitacoes/{id_solicitacao}/rejeitar", response_model=schemas.Solicitacao)
+def rejeitar_solicitacao(
+    id_solicitacao: int,
+    dados: Optional[RejeicaoSolicitacao] = None,
+    db: Session = Depends(get_db),
+    validador: models.Usuario = Depends(get_current_validador),
+):
+    """Rejeita uma solicitação pendente com o motivo obrigatório (3 a 1000 caracteres), sem pontos aproveitados, e recalcula as outras do aluno (Requer token de Professor ou Coordenador)."""
+    observacao = validar_observacao(dados.observacao if dados else None, obrigatoria=True)
+    solicitacao = carregar_para_avaliar(db, id_solicitacao)
+    return avaliar(db, solicitacao, "REJEITADA", validador, observacao)
