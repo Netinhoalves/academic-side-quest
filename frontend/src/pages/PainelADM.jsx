@@ -273,7 +273,7 @@ export default function PainelADM() {
                     <div className="rounded-[12px] overflow-hidden">
                         <div className="grid grid-cols-[1.6fr_0.9fr_0.7fr] bg-[#ffd08b] px-4 py-2 text-[24px] leading-none text-color-blue">
                             <span>Usuário</span>
-                            <span>Perfil</span>
+                            <span className="text-center">Perfil</span>
                             <span className="text-right">Ver mais</span>
                         </div>
 
@@ -290,7 +290,7 @@ export default function PainelADM() {
                                             className="w-full grid grid-cols-[1.6fr_0.9fr_0.7fr] items-center px-4 py-3 text-left text-[18px] text-color-blue hover:bg-[#ffbf5f]/70 transition-colors"
                                         >
                                             <span>{item.nome}</span>
-                                            <span>{cargo}</span>
+                                            <span className="text-center">{cargo}</span>
                                             <span className="justify-self-end text-xl">{aberto ? '▴' : '▾'}</span>
                                         </button>
 
