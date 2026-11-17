@@ -228,7 +228,7 @@ export default function PainelADM() {
 
     return (
         <LayoutPadrao perfisPermitidos={['Administrador', 'Coordenador']}>
-            <div className="w-full max-w-[920px] mx-auto pb-12">
+            <div className="w-full max-w-[920px] xl:max-w-[1100px] 2xl:max-w-[1600px] mx-auto pb-12 px-4 xl:px-0 transition-all duration-300">
                 <section className="p-0">
                     {erro && (
                         <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">
@@ -237,7 +237,7 @@ export default function PainelADM() {
                     )}
 
                     {carregando && (
-                        <div className="rounded-[12px] bg-[#FFF8F0] px-4 py-6 text-center text-color-blue shadow-[0_10px_18px_rgba(0,0,0,0.14)] mb-4">
+                        <div className="rounded-[12px] bg-[#FFF8F0] px-4 py-6 text-center text-color-blue shadow-[0_10px_18px_rgba(0,0,0,0.14)] mb-4 2xl:text-lg">
                             Carregando usuários...
                         </div>
                     )}
@@ -245,17 +245,17 @@ export default function PainelADM() {
                     <div className="bg-[#FFF8F0] rounded-[18px] shadow-[0_10px_18px_rgba(0,0,0,0.14)] p-2 sm:p-3 mb-5">
                         <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
                             <div className="flex-1 bg-white rounded-[16px] shadow-[0_8px_14px_rgba(0,0,0,0.12)] px-3 py-2 flex items-center gap-2">
-                                <span className="text-2xl text-color-orange-bright">⌕</span>
+                                <span className="text-2xl 2xl:text-3xl text-color-orange-bright">⌕</span>
                                 <input
                                     value={pesquisa}
                                     onChange={(event) => setPesquisa(event.target.value)}
                                     type="text"
                                     placeholder="Buscar usuário, perfil, e-mail..."
-                                    className="w-full outline-none bg-transparent text-lg text-color-blue placeholder:text-[#3853A4]"
+                                    className="w-full outline-none bg-transparent text-lg 2xl:text-xl text-color-blue placeholder:text-[#3853A4]"
                                 />
                             </div>
 
-                            <div className="min-w-[170px]">
+                            <div className="min-w-[170px] 2xl:min-w-[200px]">
                                 <SelectField
                                     label=""
                                     id="filtro-categoria"
@@ -271,7 +271,7 @@ export default function PainelADM() {
                     </div>
 
                     <div className="rounded-[12px] overflow-hidden">
-                        <div className="grid grid-cols-[1.6fr_0.9fr_0.7fr] bg-[#ffd08b] px-4 py-2 text-[24px] leading-none text-color-blue">
+                        <div className="grid grid-cols-[1.6fr_0.9fr_0.7fr] bg-[#ffd08b] px-4 py-2 2xl:py-3 text-[24px] 2xl:text-[28px] leading-none text-color-blue">
                             <span>Usuário</span>
                             <span className="text-center">Perfil</span>
                             <span className="text-right">Ver mais</span>
@@ -287,16 +287,16 @@ export default function PainelADM() {
                                         <button
                                             type="button"
                                             onClick={() => setLinhaAberta(aberto ? null : item.id)}
-                                            className="w-full grid grid-cols-[1.6fr_0.9fr_0.7fr] items-center px-4 py-3 text-left text-[18px] text-color-blue hover:bg-[#ffbf5f]/70 transition-colors"
+                                            className="w-full grid grid-cols-[1.6fr_0.9fr_0.7fr] items-center px-4 py-3 2xl:py-4 text-left text-[18px] 2xl:text-[20px] text-color-blue hover:bg-[#ffbf5f]/70 transition-colors"
                                         >
                                             <span>{item.nome}</span>
                                             <span className="text-center">{cargo}</span>
-                                            <span className="justify-self-end text-xl">{aberto ? '▴' : '▾'}</span>
+                                            <span className="justify-self-end text-xl 2xl:text-2xl">{aberto ? '▴' : '▾'}</span>
                                         </button>
 
                                         <div
                                             aria-hidden={!aberto}
-                                            className={`relative overflow-hidden bg-[#fdf1dd] shadow-[inset_0_10px_18px_rgba(0,0,0,0.12)] text-[15px] sm:text-[16px] transition-[max-height,opacity,transform,padding] duration-300 ease-out ${aberto ? 'max-h-[240px] opacity-100 translate-y-0 px-4 py-3 pointer-events-auto' : 'max-h-0 opacity-0 -translate-y-1 px-4 py-0 pointer-events-none'}`}
+                                            className={`relative overflow-hidden bg-[#fdf1dd] shadow-[inset_0_10px_18px_rgba(0,0,0,0.12)] text-[15px] sm:text-[16px] 2xl:text-[18px] transition-[max-height,opacity,transform,padding] duration-300 ease-out ${aberto ? 'max-h-[300px] opacity-100 translate-y-0 px-4 py-3 2xl:py-4 pointer-events-auto' : 'max-h-0 opacity-0 -translate-y-1 px-4 py-0 pointer-events-none'}`}
                                         >
                                             <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-start">
                                                 <div className="space-y-1">
@@ -326,7 +326,7 @@ export default function PainelADM() {
                             })}
                         </div>
                         {!carregando && resultadoFiltrado.length === 0 && (
-                            <div className="px-4 py-6 text-center text-color-blue font-bold">
+                            <div className="px-4 py-6 text-center text-color-blue font-bold 2xl:text-xl">
                                 Nenhum registro encontrado para a busca atual.
                             </div>
                         )}
@@ -337,7 +337,7 @@ export default function PainelADM() {
                     <button
                         type="button"
                         onClick={() => setCadastroDocenteAberto(true)}
-                        className={`${estiloBotao} px-4 py-2 text-base sm:text-lg shadow-md`}
+                        className={`${estiloBotao} px-4 py-2 text-base sm:text-lg 2xl:text-xl shadow-md`}
                     >
                         Cadastro de Servidor
                     </button>
@@ -350,14 +350,14 @@ export default function PainelADM() {
                         <div className="absolute bottom-0 right-0 w-24 h-24 bg-[radial-gradient(circle_at_bottom_right,_rgba(17,33,64,0.12),_transparent_65%)]" />
 
                         <div className="relative z-10 p-5 sm:p-6">
-                            <h2 id="editar-cadastro-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
+                            <h2 id="editar-cadastro-titulo" className="text-color-blue text-3xl sm:text-[40px] 2xl:text-[44px] font-normal mb-5">Editar cadastro</h2>
                             {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
 
                             <div className="grid gap-3">
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     {camposEdicao.map((campo) => (
                                         <div key={campo.id} className="flex flex-col w-full">
-                                            <label htmlFor={campo.id} className="text-color-blue font-bold text-base sm:text-lg mb-1">
+                                            <label htmlFor={campo.id} className="text-color-blue font-bold text-base sm:text-lg 2xl:text-xl mb-1">
                                                 {campo.label}
                                             </label>
                                             <input
@@ -365,7 +365,7 @@ export default function PainelADM() {
                                                 type={campo.type}
                                                 value={formulario[campo.id] ?? ''}
                                                 onChange={(event) => setFormulario((atual) => ({ ...atual, [campo.id]: event.target.value }))}
-                                                className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 sm:py-3 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]"
+                                                className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 sm:py-3 2xl:py-3 2xl:text-lg text-gray-900 outline-none focus:ring-2 focus:ring-color-blue transition-shadow shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]"
                                             />
                                         </div>
                                     ))}
@@ -373,7 +373,7 @@ export default function PainelADM() {
 
                                 <div className="grid gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col w-full">
-                                        <label htmlFor="id_perfil" className="text-color-blue font-bold text-base sm:text-lg mb-1">Perfil</label>
+                                        <label htmlFor="id_perfil" className="text-color-blue font-bold text-base sm:text-lg 2xl:text-xl mb-1">Perfil</label>
                                         {perfilEditavel ? (
                                             <SelectField
                                                 label=""
@@ -386,14 +386,14 @@ export default function PainelADM() {
                                                 onChange={(event) => setFormulario((atual) => ({ ...atual, id_perfil: event.target.value }))}
                                             />
                                         ) : (
-                                            <span className="w-full rounded-[10px] bg-[#ffd08b] px-3 py-2 sm:py-3 text-[#172B68] font-jaro shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]">
+                                            <span className="w-full rounded-[10px] bg-[#ffd08b] px-3 py-2 sm:py-3 2xl:py-3 2xl:text-lg text-[#172B68] font-jaro shadow-[inset_0_4px_8px_rgba(0,0,0,0.15)]">
                                                 {perfisPorId.get(String(formulario.id_perfil)) || 'Sem perfil'}
                                             </span>
                                         )}
                                     </div>
 
                                     <div className="flex flex-col w-full">
-                                        <label htmlFor="ativo" className="text-color-blue font-bold text-base sm:text-lg mb-1">Status</label>
+                                        <label htmlFor="ativo" className="text-color-blue font-bold text-base sm:text-lg 2xl:text-xl mb-1">Status</label>
                                         <SelectField
                                             label=""
                                             id="ativo"
@@ -408,14 +408,14 @@ export default function PainelADM() {
                                 </div>
 
                                 <div className="flex gap-4 sm:gap-6 mt-4 justify-center flex-wrap">
-                                    <button type="button" onClick={fecharModal} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+                                    <button type="button" onClick={fecharModal} className={`${estiloBotao} w-[130px] 2xl:w-[150px] py-2 2xl:py-3 text-lg 2xl:text-xl`} disabled={salvando}>
                                         Voltar
                                     </button>
-                                    <button type="button" onClick={confirmarEdicao} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+                                    <button type="button" onClick={confirmarEdicao} className={`${estiloBotao} w-[130px] 2xl:w-[150px] py-2 2xl:py-3 text-lg 2xl:text-xl`} disabled={salvando}>
                                         {salvando ? 'Salvando...' : 'Confirmar'}
                                     </button>
                                     {String(formulario.id) !== String(usuarioLogado?.id) && (
-                                        <button type="button" onClick={desativarRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] py-2 text-lg" disabled={salvando}>
+                                        <button type="button" onClick={desativarRegistro} className="bg-color-red text-white font-jaro tracking-widest rounded-md border-b-4 border-[#7d1712] hover:opacity-90 active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center w-[130px] 2xl:w-[150px] py-2 2xl:py-3 text-lg 2xl:text-xl" disabled={salvando}>
                                             {salvando ? 'Desativando...' : 'Desativar'}
                                         </button>
                                     )}
@@ -428,7 +428,7 @@ export default function PainelADM() {
             {cadastroDocenteAberto && (
                 <Modal onClose={fecharCadastroDocente} titleId="cadastro-servidor-titulo">
                         <div className="p-5 sm:p-6">
-                        <h2 id="cadastro-servidor-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
+                        <h2 id="cadastro-servidor-titulo" className="text-color-blue text-3xl sm:text-[40px] 2xl:text-[44px] font-normal mb-5">Cadastro de Servidor</h2>
                         {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
                         <form onSubmit={cadastrarDocente} className="grid gap-3">
                             <div className="grid gap-3 sm:grid-cols-2">
@@ -438,7 +438,7 @@ export default function PainelADM() {
                                     ['email', 'E-mail', 'email'],
                                     ['senha', 'Senha', 'password'],
                                 ].map(([id, label, type]) => (
-                                    <div key={id} className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+                                    <div key={id} className="flex flex-col text-color-blue font-bold text-base sm:text-lg 2xl:text-xl">
                                         <label htmlFor={`docente-${id}`}>{label}</label>
                                         {type === 'password' ? (
                                             <CampoSenha
@@ -447,7 +447,7 @@ export default function PainelADM() {
                                                 value={cadastroDocente[id]}
                                                 onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
                                                 required
-                                                estiloDoCampo="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                                                estiloDoCampo="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 sm:py-3 2xl:py-3 2xl:text-lg text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
                                             />
                                         ) : (
                                             <input
@@ -456,7 +456,7 @@ export default function PainelADM() {
                                                 value={cadastroDocente[id]}
                                                 onChange={(event) => setCadastroDocente((atual) => ({ ...atual, [id]: event.target.value }))}
                                                 required
-                                                className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
+                                                className="w-full bg-[#D5800BD4] rounded-[10px] px-3 py-2 sm:py-3 2xl:py-3 2xl:text-lg text-gray-900 outline-none focus:ring-2 focus:ring-color-blue"
                                             />
                                         )}
                                     </div>
@@ -464,7 +464,7 @@ export default function PainelADM() {
                             </div>
                             
                             <div className="sm:w-1/2">
-                                <label htmlFor="id_perfil_cadastro" className="flex flex-col text-color-blue font-bold text-base sm:text-lg">
+                                <label htmlFor="id_perfil_cadastro" className="flex flex-col text-color-blue font-bold text-base sm:text-lg 2xl:text-xl">
                                     Perfil
                                     <SelectField
                                         label=""
@@ -480,10 +480,10 @@ export default function PainelADM() {
                             </div>
 
                             <div className="flex gap-4 mt-4 justify-center">
-                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] 2xl:w-[150px] py-2 2xl:py-3 text-lg 2xl:text-xl`} disabled={salvando}>
                                     Voltar
                                 </button>
-                                <button type="submit" className={`${estiloBotao} w-[160px] py-2 text-lg`} disabled={salvando}>
+                                <button type="submit" className={`${estiloBotao} w-[160px] 2xl:w-[180px] py-2 2xl:py-3 text-lg 2xl:text-xl`} disabled={salvando}>
                                     {salvando ? 'Cadastrando...' : 'Cadastrar'}
                                 </button>
                             </div>
