@@ -427,11 +427,11 @@ export default function PainelADM() {
 
             {cadastroDocenteAberto && (
                 <Modal onClose={fecharCadastroDocente} titleId="cadastro-servidor-titulo">
-                        <div className="p-5 sm:p-6">
+                        <div className="min-w-0 p-5 sm:p-6">
                         <h2 id="cadastro-servidor-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
                         {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
-                        <form onSubmit={cadastrarDocente} className="grid gap-3">
-                            <div className="grid gap-3 sm:grid-cols-2">
+                        <form onSubmit={cadastrarDocente} className="grid min-w-0 gap-3">
+                            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                                 {[
                                     ['nome', 'Nome completo', 'text'],
                                     ['matricula', 'Código do servidor', 'text'],
@@ -479,11 +479,11 @@ export default function PainelADM() {
                                 </label>
                             </div>
 
-                            <div className="flex gap-4 mt-4 justify-center">
-                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+                            <div className="mt-4 flex gap-3 sm:gap-4 justify-center">
+                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} min-w-0 flex-1 sm:flex-none sm:w-[130px] py-2 text-lg`} disabled={salvando}>
                                     Voltar
                                 </button>
-                                <button type="submit" className={`${estiloBotao} w-[160px] py-2 text-lg`} disabled={salvando}>
+                                <button type="submit" className={`${estiloBotao} min-w-0 flex-1 sm:flex-none sm:w-[160px] py-2 text-lg`} disabled={salvando}>
                                     {salvando ? 'Cadastrando...' : 'Cadastrar'}
                                 </button>
                             </div>
