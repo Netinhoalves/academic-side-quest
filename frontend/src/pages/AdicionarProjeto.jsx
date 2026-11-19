@@ -110,7 +110,7 @@ export default function AdicionarProjeto() {
                         </div>)}
                     </div>
                     {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
-                    {etapa === 0 && <ProjetoForm titulo="Adicionar Projeto" projeto={valoresProjeto} onSubmit={avancarProjeto} submitLabel="Continuar" />}
+                    {etapa === 0 && <ProjetoForm titulo="Adicionar Projeto" projeto={valoresProjeto} onSubmit={avancarProjeto} onCancelar={() => navigate('/gerenciar-projetos')} mostrarVoltar submitLabel="Continuar" />}
                     {etapa === 1 && <CategoriaForm key={dados.categoriaAtual?.nome || 'nova-categoria'} titulo="Adicionar Categoria" categoria={dados.categoriaAtual || undefined} onSubmit={avancarCategoria} onCancelar={() => setEtapa(0)} mostrarVoltar submitLabel="Continuar" />}
                     {etapa === 2 && <SubcategoriaForm key={`${dados.categoriaAtual?.nome || 'categoria'}-${dados.categorias.length}`} titulo="Adicionar Subcategoria" onSubmit={adicionarSubcategoria} onCancelar={() => setEtapa(1)} carregando={carregando} />}
                     {etapa === 3 && <section className="rounded-lg bg-color-yellow px-8 py-6 shadow-sm">
