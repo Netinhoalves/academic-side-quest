@@ -228,7 +228,7 @@ export default function PainelADM() {
 
     return (
         <LayoutPadrao perfisPermitidos={['Administrador', 'Coordenador']}>
-            <div className="w-full max-w-[920px] xl:max-w-[1100px] 2xl:max-w-[1600px] mx-auto pb-12 px-4 xl:px-0 transition-all duration-300">
+            <div className="w-full max-w-[920px] xl:max-w-[1100px] 2xl:max-w-[1600px] mx-auto pb-12 transition-all duration-300">
                 <section className="p-0">
                     {erro && (
                         <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">

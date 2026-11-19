@@ -14,7 +14,7 @@ export default function DashboardCoordenador() {
 
     return(
         <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']}>
-            <div className="flex flex-col flex-1 justify-center w-full px-4 sm:px-0">
+            <div className="flex flex-col flex-1 justify-center w-full">
                 <h1 className="font-jaro text-color-blue text-4xl md:text-[56px] 2xl:text-[64px] text-center mb-6 transition-all duration-300">
                     Bem-vindo {usuario?.nome}!
                 </h1>
