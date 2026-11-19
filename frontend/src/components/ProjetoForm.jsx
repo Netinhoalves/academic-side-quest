@@ -10,6 +10,7 @@ export default function ProjetoForm({
     modoEdicao = false,
     carregando = false,
     submitLabel,
+    mostrarVoltar = false,
 }) {
     const [opcoesCursos, setOpcoesCursos] = useState(null);
 
@@ -60,6 +61,7 @@ export default function ProjetoForm({
             onCancelar={onCancelar} 
             carregando={carregando} 
             submitLabel={submitLabel} 
+            mostrarVoltar={mostrarVoltar}
         />
     );
 }
