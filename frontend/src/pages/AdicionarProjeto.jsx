@@ -22,26 +22,30 @@ export default function AdicionarProjeto() {
             return;
         }
 
-        setDados((atual) => ({ ...atual, projeto: {
-                    ...atual.projeto,
-                    id_curso: idCurso,
-                    nome: formulario.titulo,
-                    ano: Number(formulario.ano),
-                    descricao: formulario.descricao || null,
-                    total_pontos: Number(formulario.pontos),
-                } }));
+        setDados((atual) => ({
+            ...atual, projeto: {
+                ...atual.projeto,
+                id_curso: idCurso,
+                nome: formulario.titulo,
+                ano: Number(formulario.ano),
+                descricao: formulario.descricao || null,
+                total_pontos: Number(formulario.pontos),
+            }
+        }));
         setEtapa(1);
     }
 
     function avancarCategoria(event) {
         event.preventDefault();
         const formulario = Object.fromEntries(new FormData(event.currentTarget));
-        setDados((atual) => ({ ...atual, categoriaAtual: {
-            nome: formulario.nome,
-            descricao: formulario.descricao || null,
-            limite_total: Number(formulario.limite_total),
-            limite_semestre: Number(formulario.limite_semestre),
-        } }));
+        setDados((atual) => ({
+            ...atual, categoriaAtual: {
+                nome: formulario.nome,
+                descricao: formulario.descricao || null,
+                limite_total: Number(formulario.limite_total),
+                limite_semestre: Number(formulario.limite_semestre),
+            }
+        }));
         setEtapa(2);
     }
 
@@ -97,9 +101,12 @@ export default function AdicionarProjeto() {
         <LayoutPadrao perfisPermitidos={['coordenador']}>
             <div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">
                 <div className="w-full max-w-[1000px]">
-                    <div className="mb-6 grid grid-cols-3 gap-2">
-                        {etapas.map((nome, index) => <div key={nome} className={`border-b-4 pb-2 text-center text-lg ${index === etapa ? 'border-color-blue text-color-blue' : index < etapa ? 'border-color-orange-bright text-color-blue' : 'border-[#D7C5B2] text-[#8A7868]'}`}>
-                            <span className="mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-current text-sm text-white">{index + 1}</span>{nome}
+                    <div className="mb-6 grid grid-cols-3 gap-1 sm:gap-2">
+                        {etapas.map((nome, index) => <div key={nome} className={`border-b-4 pb-2 flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-lg ${index === etapa ? 'border-color-blue text-color-blue' : index < etapa ? 'border-color-orange-bright text-color-blue' : 'border-[#D7C5B2] text-[#8A7868]'}`}>
+                            <span className="inline-flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-current text-xs sm:text-sm">
+                                <span className="text-white">{index + 1}</span>
+                            </span>
+                            <span className="truncate">{nome}</span>
                         </div>)}
                     </div>
                     {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
