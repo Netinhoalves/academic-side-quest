@@ -298,14 +298,14 @@ export default function PainelADM() {
                                             aria-hidden={!aberto}
                                             className={`relative overflow-hidden bg-[#fdf1dd] shadow-[inset_0_10px_18px_rgba(0,0,0,0.12)] text-[15px] sm:text-[16px] transition-[max-height,opacity,transform,padding] duration-300 ease-out ${aberto ? 'max-h-[240px] opacity-100 translate-y-0 px-4 py-3 pointer-events-auto' : 'max-h-0 opacity-0 -translate-y-1 px-4 py-0 pointer-events-none'}`}
                                         >
-                                            <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-start">
+                                            <div className="grid gap-1 sm:gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-start">
                                                 <div className="space-y-1">
                                                     <p className="text-color-blue font-bold">Matrícula: {item.matricula || '—'}</p>
                                                     <p className="text-color-blue">E-mail: {item.email}</p>
                                                     <p className="text-color-blue">Perfil: {cargo}</p>
                                                     <p className="text-color-blue">Criado em: {formatarData(item.created_at)}</p>
                                                 </div>
-                                                <div className="sm:self-end sm:justify-self-end w-full">
+                                                <div className="space-y-1 sm:self-end sm:justify-self-end w-full">
                                                     <p className="text-color-blue sm:text-right">Status: {item.ativo ? 'Ativo' : 'Inativo'}</p>
                                                     <p className="text-color-blue sm:text-right">Atualizado em: {formatarData(item.updated_at)}</p>
                                                 </div>
