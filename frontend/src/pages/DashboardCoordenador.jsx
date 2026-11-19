@@ -13,7 +13,7 @@ export default function DashboardCoordenador() {
     }, []);
 
     return(
-        <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']}>
+        <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']} centralizarNaTela>
             <h1 className="font-jaro text-color-blue text-4xl md:text-[64px] text-center mb-6">
                 Bem-vindo {usuario?.nome}!
             </h1>

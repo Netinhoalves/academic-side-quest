@@ -35,7 +35,7 @@ function obterItensMenu(perfil, telaInicial) {
     return [];
 }
 
-export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenador'] }) {
+export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenador'], centralizarNaTela = false }) {
     const navigate = useNavigate();
     const location = useLocation();
     
@@ -189,7 +189,11 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
                     </aside>
                 )}
 
-                <main className="relative min-w-0 flex-1 flex flex-col items-center px-5 py-10 md:px-12 lg:px-16">
+                <main className={`relative min-w-0 flex-1 flex flex-col items-center px-5 py-10 md:px-12 lg:px-16 ${
+                    centralizarNaTela && temMenu
+                        ? menuRecolhido ? 'md:-translate-x-[29px]' : 'md:-translate-x-[112.5px]'
+                        : ''
+                }`}>
                     {children}
                 </main>
             </div>
