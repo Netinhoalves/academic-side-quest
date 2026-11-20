@@ -13,11 +13,10 @@ export default function DashboardCoordenador() {
     }, []);
 
     return(
-        <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']}>
-            <div className="flex flex-col flex-1 justify-center w-full">
-                <h1 className="font-jaro text-color-blue text-4xl md:text-[64px] text-center mb-6">
-                    Bem-vindo {usuario?.nome}!
-                </h1>
+        <LayoutPadrao perfisPermitidos={['Coordenador', 'Professor']} centralizarNaTela>
+            <h1 className="font-jaro text-color-blue text-4xl md:text-[64px] text-center mb-6">
+                Bem-vindo {usuario?.nome}!
+            </h1>
 
                 <div className="mx-auto bg-color-yellow w-full max-w-[900px] min-h-[402px] rounded-[10px] shadow-lg flex flex-wrap items-center justify-center gap-8 md:gap-12 p-8">
                     <DashboardButton 
@@ -48,7 +47,6 @@ export default function DashboardCoordenador() {
                         </>
                     )}
                 </div>
-            </div>
         </LayoutPadrao>
     );
 }
