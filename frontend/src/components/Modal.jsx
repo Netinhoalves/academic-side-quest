@@ -60,9 +60,10 @@ export default function Modal({ children, onClose, titleId }) {
         >
             <div className="flex h-full items-start justify-center sm:items-center">
                 <div
-                    className="relative w-full max-w-[560px] max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden overscroll-contain rounded-[15px] bg-color-yellow shadow-[0_18px_30px_rgba(0,0,0,0.3)]"
+                    className="relative w-full max-w-[560px] max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden rounded-[15px] bg-color-yellow shadow-[0_18px_30px_rgba(0,0,0,0.3)]"
                     style={{
                         maxHeight: 'calc(100dvh - max(2rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)))',
+                        overscrollBehavior: 'none',
                         touchAction: 'pan-y',
                         WebkitOverflowScrolling: 'touch',
                     }}

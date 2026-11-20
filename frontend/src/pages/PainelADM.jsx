@@ -346,10 +346,7 @@ export default function PainelADM() {
 
             {modalAberto && formulario && (
                 <Modal onClose={fecharModal} titleId="editar-cadastro-titulo">
-                        <div className="absolute top-0 left-0 w-24 h-24 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.45),_transparent_65%)]" />
-                        <div className="absolute bottom-0 right-0 w-24 h-24 bg-[radial-gradient(circle_at_bottom_right,_rgba(17,33,64,0.12),_transparent_65%)]" />
-
-                        <div className="relative z-10 p-5 sm:p-6">
+                        <div className="relative z-10 px-5 pb-5 pt-3 sm:px-6 sm:pb-6 sm:pt-3">
                             <h2 id="editar-cadastro-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Editar cadastro</h2>
                             {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
 

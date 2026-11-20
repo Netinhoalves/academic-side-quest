@@ -5,7 +5,22 @@
 @tailwind utilities;
 
 @layer base {
+	html,
+	body {
+		width: 100%;
+		min-height: 100%;
+		overscroll-behavior: none;
+	}
+
 	body {
 		font-family: 'Jaro', sans-serif;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	button,
+	input,
+	select,
+	textarea {
+		max-width: 100%;
 	}
 }
