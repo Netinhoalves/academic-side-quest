@@ -16,7 +16,7 @@ export default function Modal({ children, onClose, titleId }) {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/45 px-4 pt-14 pb-6 lg:py-8" role="presentation">
             <div className="flex min-h-full items-start justify-center sm:items-center">
                 <div
-                    className="relative my-auto w-full max-w-[560px] overflow-visible rounded-[15px] bg-color-yellow shadow-[0_18px_30px_rgba(0,0,0,0.3)]"
+                    className="relative my-auto w-full max-w-[560px] overflow-hidden rounded-[15px] bg-color-yellow shadow-[0_18px_30px_rgba(0,0,0,0.3)]"
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby={titleId}
