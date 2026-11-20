@@ -47,7 +47,6 @@ export default function DashboardCoordenador() {
                         </>
                     )}
                 </div>
-            </div>
         </LayoutPadrao>
     );
 }
