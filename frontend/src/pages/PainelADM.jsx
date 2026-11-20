@@ -273,7 +273,7 @@ export default function PainelADM() {
                     <div className="rounded-[12px] overflow-hidden">
                         <div className="grid grid-cols-[1.6fr_0.9fr_0.7fr] bg-[#ffd08b] px-4 py-2 text-[24px] leading-none text-color-blue">
                             <span>Usuário</span>
-                            <span>Perfil</span>
+                            <span className="text-center">Perfil</span>
                             <span className="text-right">Ver mais</span>
                         </div>
 
@@ -290,7 +290,7 @@ export default function PainelADM() {
                                             className="w-full grid grid-cols-[1.6fr_0.9fr_0.7fr] items-center px-4 py-3 text-left text-[18px] text-color-blue hover:bg-[#ffbf5f]/70 transition-colors"
                                         >
                                             <span>{item.nome}</span>
-                                            <span>{cargo}</span>
+                                            <span className="text-center">{cargo}</span>
                                             <span className="justify-self-end text-xl">{aberto ? '▴' : '▾'}</span>
                                         </button>
 
@@ -298,14 +298,14 @@ export default function PainelADM() {
                                             aria-hidden={!aberto}
                                             className={`relative overflow-hidden bg-[#fdf1dd] shadow-[inset_0_10px_18px_rgba(0,0,0,0.12)] text-[15px] sm:text-[16px] transition-[max-height,opacity,transform,padding] duration-300 ease-out ${aberto ? 'max-h-[240px] opacity-100 translate-y-0 px-4 py-3 pointer-events-auto' : 'max-h-0 opacity-0 -translate-y-1 px-4 py-0 pointer-events-none'}`}
                                         >
-                                            <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-start">
+                                            <div className="grid gap-1 sm:gap-3 sm:grid-cols-[1.4fr_1fr] sm:items-start">
                                                 <div className="space-y-1">
                                                     <p className="text-color-blue font-bold">Matrícula: {item.matricula || '—'}</p>
                                                     <p className="text-color-blue">E-mail: {item.email}</p>
                                                     <p className="text-color-blue">Perfil: {cargo}</p>
                                                     <p className="text-color-blue">Criado em: {formatarData(item.created_at)}</p>
                                                 </div>
-                                                <div className="sm:self-end sm:justify-self-end w-full">
+                                                <div className="space-y-1 sm:self-end sm:justify-self-end w-full">
                                                     <p className="text-color-blue sm:text-right">Status: {item.ativo ? 'Ativo' : 'Inativo'}</p>
                                                     <p className="text-color-blue sm:text-right">Atualizado em: {formatarData(item.updated_at)}</p>
                                                 </div>
@@ -424,11 +424,11 @@ export default function PainelADM() {
 
             {cadastroDocenteAberto && (
                 <Modal onClose={fecharCadastroDocente} titleId="cadastro-servidor-titulo">
-                        <div className="p-5 sm:p-6">
+                        <div className="min-w-0 p-5 sm:p-6">
                         <h2 id="cadastro-servidor-titulo" className="text-color-blue text-3xl sm:text-[40px] font-normal mb-5">Cadastro de Servidor</h2>
                         {erro && <div className="mb-4 rounded-[12px] bg-red-100 border border-red-300 px-4 py-3 text-red-700 text-sm">{erro}</div>}
-                        <form onSubmit={cadastrarDocente} className="grid gap-3">
-                            <div className="grid gap-3 sm:grid-cols-2">
+                        <form onSubmit={cadastrarDocente} className="grid min-w-0 gap-3">
+                            <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                                 {[
                                     ['nome', 'Nome completo', 'text'],
                                     ['matricula', 'Código do servidor', 'text'],
@@ -476,11 +476,11 @@ export default function PainelADM() {
                                 </label>
                             </div>
 
-                            <div className="flex gap-4 mt-4 justify-center">
-                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} w-[130px] py-2 text-lg`} disabled={salvando}>
+                            <div className="mt-4 flex gap-3 sm:gap-4 justify-center">
+                                <button type="button" onClick={fecharCadastroDocente} className={`${estiloBotao} min-w-0 flex-1 sm:flex-none sm:w-[130px] py-2 text-lg`} disabled={salvando}>
                                     Voltar
                                 </button>
-                                <button type="submit" className={`${estiloBotao} w-[160px] py-2 text-lg`} disabled={salvando}>
+                                <button type="submit" className={`${estiloBotao} min-w-0 flex-1 sm:flex-none sm:w-[160px] py-2 text-lg`} disabled={salvando}>
                                     {salvando ? 'Cadastrando...' : 'Cadastrar'}
                                 </button>
                             </div>
