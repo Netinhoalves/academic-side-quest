@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function Modal({ children, onClose, titleId }) {
     useEffect(() => {
@@ -46,7 +47,7 @@ export default function Modal({ children, onClose, titleId }) {
         }
     };
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-[50] h-[100dvh] overflow-hidden bg-black/45 p-4 sm:p-5"
             style={{
@@ -77,5 +78,5 @@ export default function Modal({ children, onClose, titleId }) {
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }
