@@ -189,7 +189,7 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
                     </aside>
                 )}
 
-                <main className="relative min-w-0 flex-1 flex flex-col items-center py-10 px-5 lg:pr-8 transition-[width,margin,padding] duration-300 ease-out">
+                <main className="relative min-w-0 flex-1 flex flex-col items-center px-5 py-10 md:px-12 lg:px-16">
                     {children}
                 </main>
             </div>
