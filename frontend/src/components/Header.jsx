@@ -29,7 +29,7 @@ export default function Header({ usuario, temMenu, onAbrirMenu }) {
                     </button>
                 )}
 
-                <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center text-color-blue font-bold text-base shrink-0">
+                <div className="h-11 w-11 aspect-square shrink-0 bg-white rounded-full flex items-center justify-center text-color-blue font-bold text-base">
                     {iniciais}
                 </div>
 

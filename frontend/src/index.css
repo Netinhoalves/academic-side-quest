@@ -5,7 +5,70 @@
 @tailwind utilities;
 
 @layer base {
+	html,
+	body,
+	#root {
+		width: 100%;
+		min-height: 100%;
+	}
+
+	html {
+		height: 100%;
+		height: -webkit-fill-available;
+		background-color: #FFF7EE;
+	}
+
+	body {
+		min-height: 100vh;
+		min-height: -webkit-fill-available;
+		margin: 0;
+		background-color: #FFF7EE;
+		overscroll-behavior-y: none;
+	}
+
+	#root {
+		min-height: 100vh;
+		min-height: -webkit-fill-available;
+	}
+
+	@supports (height: 100dvh) {
+		body,
+		#root {
+			min-height: 100dvh;
+		}
+	}
+
+	html,
+	body {
+		overscroll-behavior: none;
+	}
+
 	body {
 		font-family: 'Jaro', sans-serif;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	button,
+	input,
+	select,
+	textarea {
+		max-width: 100%;
+	}
+}
+
+@media (max-width: 767px) {
+	.layout-padrao,
+	.layout-padrao + * {
+		min-height: 100vh;
+		min-height: -webkit-fill-available;
+	}
+
+	body.modal-aberto .layout-padrao > header {
+		display: none;
+	}
+
+	body.modal-aberto .layout-padrao > div.flex {
+		min-height: 100vh;
+		min-height: -webkit-fill-available;
 	}
 }
