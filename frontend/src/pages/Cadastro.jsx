@@ -98,7 +98,7 @@ export default function Cadastro() {
   const estiloBotao = "bg-color-blue text-white font-jaro tracking-widest rounded-md border-b-4 border-[#0c1840] hover:bg-color-blue-light active:border-b-0 active:translate-y-1 transition-all flex items-center justify-center";
 
   return (
-    <div className="relative min-h-screen bg-color-creme flex items-center justify-center p-4 overflow-hidden font-jaro">
+    <div className="relative min-h-[100dvh] bg-color-creme flex items-center justify-center p-4 overflow-hidden font-jaro">
       <img src={pixelSupAzul} alt="" className="absolute top-0 left-0 w-32 md:w-auto max-w-[265px]" />
       <img src={pixelInfAzul} alt="" className="absolute bottom-0 right-0 w-32 md:w-auto max-w-[265px]" />
 

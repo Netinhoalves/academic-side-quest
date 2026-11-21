@@ -45,7 +45,7 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen bg-color-orange-bright flex items-center justify-center p-4 overflow-hidden font-jaro">
+    <div className="relative min-h-[100dvh] bg-color-orange-bright flex items-center justify-center p-4 overflow-hidden font-jaro">
       <img src={pixelSup} alt="" className="absolute top-0 left-0 w-32 md:w-auto max-w-[265px]" />
       <img src={pixelInf} alt="" className="absolute bottom-0 right-0 w-32 md:w-auto max-w-[265px]" />
 

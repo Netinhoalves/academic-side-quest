@@ -52,7 +52,7 @@ export default function EditarCurso() {
 
     return (
         <LayoutPadrao perfisPermitidos={['coordenador']}>
-            <div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10">
+            <div className="flex min-h-[calc(100dvh-156px)] items-start justify-center pt-10">
                 <div className="w-full max-w-[1000px]">
                     {erro && <p className="mb-4 rounded-md bg-red-100 px-4 py-3 text-red-700">{erro}</p>}
                     {curso && (

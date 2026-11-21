@@ -1,9 +1,10 @@
 import { Funnel } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useFecharAoClicarFora from '../hooks/useFecharAoClicarFora';
 
 export function SelectField({label, name, id, options, required, className = '', value, onChange, placeholderLabel = 'Selecione...', ...props}) {
     const rootRef = useRef(null);
+    const listaRef = useRef(null);
     const [interno, setInterno] = useState('');
     const [aberto, setAberto] = useState(false);
 
@@ -12,6 +13,12 @@ export function SelectField({label, name, id, options, required, className = '',
     const opcaoAtual = options.find((opt) => opt.value === valorAtual);
 
     useFecharAoClicarFora(rootRef, () => setAberto(false), aberto);
+
+    useEffect(() => {
+        if (aberto) {
+            listaRef.current?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+    }, [aberto]);
 
     const selecionar = (novoValor) => {
         if (!controlado) {
@@ -56,7 +63,7 @@ export function SelectField({label, name, id, options, required, className = '',
             </button>
 
             {aberto && (
-                <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[200px] overflow-y-auto rounded-[10px] bg-[#ffd08b] shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
+                <div ref={listaRef} className="absolute left-0 right-0 top-full z-20 mt-1 max-h-[200px] overflow-y-auto rounded-[10px] bg-[#ffd08b] shadow-[0_12px_24px_rgba(0,0,0,0.18)]">
                     {placeholderLabel && (
                         <button
                             type="button"
