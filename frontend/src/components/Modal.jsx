@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 export default function Modal({ children, onClose, titleId }) {
     useEffect(() => {
         const scrollAnterior = window.scrollY;
+        document.body.classList.add('modal-aberto');
         const bodyStyles = {
             position: document.body.style.position,
             top: document.body.style.top,
@@ -28,6 +29,7 @@ export default function Modal({ children, onClose, titleId }) {
         document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
+            document.body.classList.remove('modal-aberto');
             document.body.style.position = bodyStyles.position;
             document.body.style.top = bodyStyles.top;
             document.body.style.left = bodyStyles.left;

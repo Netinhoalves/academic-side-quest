@@ -80,7 +80,7 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
     }
 
     return (
-        <div className="relative min-h-[100dvh] bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
+        <div className="layout-padrao relative min-h-[100dvh] bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
             <Header
                 usuario={usuario}
                 temMenu={temMenu}
