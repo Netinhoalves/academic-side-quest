@@ -80,7 +80,7 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
     }
 
     return (
-        <div className="relative min-h-screen bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
+        <div className="relative min-h-[100dvh] bg-color-creme overflow-hidden flex flex-col font-jaro text-color-blue">
             <Header
                 usuario={usuario}
                 temMenu={temMenu}
@@ -137,7 +137,7 @@ export default function LayoutPadrao({ children, perfisPermitidos = ['Coordenado
                 </div>
             )}
 
-            <div className="relative z-10 flex flex-1 min-h-[calc(100vh-75px)]">
+            <div className="relative z-10 flex flex-1 min-h-[calc(100dvh-75px)]">
                 {temMenu && (
                     <aside
                         className={`hidden md:flex shrink-0 bg-color-blue text-white flex-col justify-between py-6 transition-all duration-300 ${

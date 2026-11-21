@@ -34,5 +34,5 @@ export default function AdicionarCategoria() {
         });
     }
 
-    return <LayoutPadrao perfisPermitidos={['coordenador']}><div className="flex min-h-[calc(100vh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]"><CategoriaForm titulo="Adicionar Categoria" onSubmit={handleSubmit} onCancelar={voltar} mostrarVoltar /></div></div></LayoutPadrao>;
+    return <LayoutPadrao perfisPermitidos={['coordenador']}><div className="flex min-h-[calc(100dvh-156px)] items-start justify-center pt-10"><div className="w-full max-w-[1000px]"><CategoriaForm titulo="Adicionar Categoria" onSubmit={handleSubmit} onCancelar={voltar} mostrarVoltar /></div></div></LayoutPadrao>;
 }
