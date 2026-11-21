@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Inicio from './pages/Inicio';
 import Login from './pages/Login';
 import Cadastro from './pages/Cadastro';
@@ -19,9 +20,30 @@ import AdicionarCurso from './pages/AdicionarCurso';
 import EditarCurso from './pages/EditarCurso';
 import EmBreve from './pages/EmBreve';
 
+function FundoDaAplicacao() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const telaLaranja = location.pathname === '/login'
+      || location.pathname.startsWith('/login/');
+    const cor = telaLaranja ? '#F29334' : '#FFF7EE';
+
+    document.documentElement.style.backgroundColor = cor;
+    document.body.style.backgroundColor = cor;
+
+    return () => {
+      document.documentElement.style.removeProperty('background-color');
+      document.body.style.removeProperty('background-color');
+    };
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   return(
     <BrowserRouter>
+      <FundoDaAplicacao />
       <Routes>
         <Route path="/" element={<Inicio />} />
         <Route path="/login" element={<Login />} />

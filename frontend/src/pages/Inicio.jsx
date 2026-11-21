@@ -26,7 +26,7 @@ export default function Inicio() {
     }, [navigate]);
 
     return (
-        <div className="min-h-screen bg-color-creme flex flex-col items-center justify-center p-4">
+        <div className="min-h-[100dvh] bg-color-creme flex flex-col items-center justify-center p-4">
             <img src={logoProjeto} alt="Academic Side Quest Logo" className="w-[150px] max-w-full" />
             <img src={tituloProjeto} alt="Academic Side Quest" className="w-[600px] max-w-full mb-12"/>
 
